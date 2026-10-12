@@ -1,5 +1,5 @@
 // Offline cache for the Meal Planner. Bump VERSION when files change so installed copies refresh.
-const VERSION = 'mealplanner-v8';
+const VERSION = 'mealplanner-v14';
 const CORE = ['./', './index.html', './manifest.json', './firebase-config.js', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

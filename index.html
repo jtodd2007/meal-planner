@@ -33,6 +33,16 @@
   h1{font-family:Georgia,'Times New Roman',serif;font-size:34px;margin:0 0 8px;color:var(--ink);line-height:1.15;}
   header p{color:var(--ink-soft);font-size:15px;margin:0;max-width:480px;}
   #priceEditToggle{flex-shrink:0;font-size:12px;padding:9px 14px;border-radius:8px;border:1px solid var(--sage);background:var(--white);color:var(--sage);font-weight:600;cursor:pointer;white-space:nowrap;}
+  .step-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--white);margin-bottom:8px;}
+  .step-num{width:32px;height:32px;border-radius:50%;background:var(--sage-soft);color:var(--sage);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+  .step-row.done .step-num{background:var(--sage);color:var(--white);}
+  .step-row.locked{opacity:.55;}
+  .step-text{flex:1;display:flex;flex-direction:column;font-size:15px;gap:2px;}
+  .step-text span{font-size:12px;color:var(--ink-soft);}
+  .tools-box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--white);}
+  .tools-box summary{cursor:pointer;font-weight:600;font-size:15px;}
+  .tools-body{margin-top:12px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+  .tools-body details{width:100%;}
   section{margin-bottom:30px;}
   h2{font-family:Georgia,serif;font-size:19px;margin:0 0 12px;color:var(--ink);}
   .subtle{font-size:12px;color:var(--ink-soft);margin:-6px 0 12px;}
@@ -159,6 +169,7 @@
   #cookOverlay .ck-nav button{flex:1;padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;border:1px solid var(--sage);background:var(--white);color:var(--sage);}
   #cookOverlay .ck-nav button.main{background:var(--sage);color:var(--white);}
   #cookOverlay .ck-timer{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;margin:8px 0;}
+  .item-controls button.mini-btn{width:auto !important;height:auto !important;min-width:0;border-radius:14px;font-size:12px;line-height:1.25;padding:5px 10px;white-space:nowrap;}
   .grocery-row button.mini-btn{width:auto;height:auto;min-width:0;border-radius:14px;white-space:nowrap;padding:5px 9px;font-size:12px;}
   .grocery-row{flex-wrap:wrap;}
   .grocery-row.have{opacity:.55;}
@@ -174,12 +185,7 @@
     <div>
       <div class="kicker">This week's sale-based plan</div>
       <h1>Weekly Meal &amp; Grocery Planner</h1>
-      <p>Pick your household size and budget, choose meals and snacks, and build a priced grocery list.</p>
-    </div>
-    <div style="display:flex; flex-direction:column; gap:6px;">
-      <button id="syncBtn" type="button" style="font-size:12px;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--white);color:var(--ink-soft);cursor:pointer;">☁️ Sync</button>
-      <button id="priceEditToggle" type="button">Update prices</button>
-      <button id="resetWeekBtn" type="button" style="font-size:12px;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--white);color:var(--ink-soft);font-weight:600;cursor:pointer;white-space:nowrap;">Reset week</button>
+      <p>Three steps: set your people and budget, pick meals, then build your shopping list.</p>
     </div>
   </header>
 
@@ -187,6 +193,26 @@
     <div class="note-box" style="margin-top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <div><strong>How were last week's meals?</strong><br><span id="rateCardText"></span></div>
       <button id="rateNowBtn" type="button" style="flex-shrink:0;padding:10px 14px;border-radius:8px;border:none;background:var(--sage);color:var(--white);font-size:13px;font-weight:600;cursor:pointer;">Rate now</button>
+    </div>
+  </section>
+
+  <section data-tab="plan" id="startGuide">
+    <h2>Start here</h2>
+    <div class="subtle">Three steps, about 10 minutes a week.</div>
+    <div class="step-row" id="stepRow1">
+      <span class="step-num">1</span>
+      <div class="step-text"><b>Set your people and budget</b><span id="stepStatus1"></span></div>
+      <button type="button" class="mini-btn go" id="stepGo1">Change</button>
+    </div>
+    <div class="step-row" id="stepRow2">
+      <span class="step-num">2</span>
+      <div class="step-text"><b>Pick this week's meals</b><span id="stepStatus2"></span></div>
+      <button type="button" class="mini-btn go" id="stepGo2">Pick meals</button>
+    </div>
+    <div class="step-row" id="stepRow3">
+      <span class="step-num">3</span>
+      <div class="step-text"><b>Build your shopping list</b><span id="stepStatus3"></span></div>
+      <button type="button" class="mini-btn go" id="stepGo3">Build list</button>
     </div>
   </section>
 
@@ -204,7 +230,8 @@
   </section>
 
   <section data-tab="plan">
-    <h2>Diet or food requests</h2>
+    <h2>Any food needs?</h2>
+    <div class="subtle">Allergies, diets or cravings. Type it, or tap a chip.</div>
     <textarea id="dietBox" rows="2" placeholder="e.g. no dairy, vegetarian, no pork, no shellfish, no peanuts, gluten free, craving Italian, quick meals, favorites only..."></textarea>
     <button id="submitDietBtn" type="button" style="margin-top:8px; padding:10px 16px; border-radius:8px; border:none; background:var(--sage); color:var(--white); font-size:13px; font-weight:600; cursor:pointer;">Submit diet / food requests</button>
     <div class="subtle" style="margin-top:10px;">Or tap to add:</div>
@@ -213,19 +240,6 @@
   </section>
 
 
-  <section data-tab="plan" id="weeklyHelp">
-    <details>
-      <summary style="cursor:pointer;font-weight:600;">🗓️ Weekly refresh checklist (Wednesdays)</summary>
-      <ol style="font-size:13px;color:var(--ink-soft);padding-left:18px;margin:10px 0;">
-        <li>Rate last week's meals when the prompt appears (⭐ 1–5, add a note, save favorites).</li>
-        <li>Download the new Meijer ad PDF (and the Good Deal Days PDF).</li>
-        <li>Open your chat with Claude, attach the PDFs, and paste the message below.</li>
-        <li>Claude sends back an updated app file. Replace <b>index.html</b> in your GitHub Pages folder (see the README).</li>
-        <li>Open the app, tap <b>Update prices</b> if you changed any by hand, then pick this week's meals.</li>
-      </ol>
-      <button id="copyWeeklyMsg" type="button" class="mini-btn go">📋 Copy my Wednesday message for Claude</button>
-    </details>
-  </section>
   <section id="hotDealsSection" data-tab="deals">
     <h2>🔥 Hot deals this week</h2>
     <div class="subtle">Prices strong enough to be worth stocking up on.</div>
@@ -242,6 +256,39 @@
       <span class="label">Estimated total</span>
       <span class="value" id="totalVal">$0.00 <span class="budget">/ $150</span></span>
     </div>
+  </section>
+
+  <section data-tab="plan" id="toolsSection">
+    <details class="tools-box">
+      <summary>⚙️ Settings &amp; tools <span class="subtle" style="margin:0 0 0 6px;">(sync, edit prices, reset, Wednesday steps)</span></summary>
+      <div class="tools-body">
+        <div style="width:100%;">
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">📷 Dish photos (Pixabay)</div>
+          <div class="subtle" style="margin:0 0 6px;">Paste your Pixabay key once. Each new dish gets a matching photo. Photos from Pixabay.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <input id="pixKeyInput" type="password" autocomplete="off" placeholder="Paste key" style="flex:1;min-width:160px;font-size:13px;padding:8px;border:1px solid var(--line);border-radius:8px;">
+            <button id="pixSaveBtn" type="button" class="mini-btn go">Save &amp; load photos</button>
+          </div>
+          <div class="subtle" id="pixMsg" style="margin:6px 0 0;"></div>
+        </div>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <button id="syncBtn" type="button" style="font-size:12px;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--white);color:var(--ink-soft);cursor:pointer;">☁️ Sync</button>
+      <button id="priceEditToggle" type="button">Edit prices</button>
+      <button id="resetWeekBtn" type="button" style="font-size:12px;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--white);color:var(--ink-soft);font-weight:600;cursor:pointer;white-space:nowrap;">Reset week</button>
+    </div>
+    <details>
+      <summary style="cursor:pointer;font-weight:600;">🗓️ Weekly refresh checklist (Wednesdays)</summary>
+      <ol style="font-size:13px;color:var(--ink-soft);padding-left:18px;margin:10px 0;">
+        <li>Rate last week's meals when the prompt appears (⭐ 1–5, add a note, save favorites).</li>
+        <li>Download the new Meijer ad PDF (and the Good Deal Days PDF).</li>
+        <li>Open your chat with Claude, attach the PDFs, and paste the message below.</li>
+        <li>Claude sends back an updated app file. Replace <b>index.html</b> in your GitHub Pages folder (see the README).</li>
+        <li>Open the app, tap <b>Update prices</b> if you changed any by hand, then pick this week's meals.</li>
+      </ol>
+      <button id="copyWeeklyMsg" type="button" class="mini-btn go">📋 Copy my Wednesday message for Claude</button>
+    </details>
+      </div>
+    </details>
   </section>
 
   <section data-tab="meals">
@@ -270,7 +317,7 @@
   <button class="chip fav-chip" id="hideRecentToggle" type="button">🔄 Hide recently made</button>
 
     <div class="range-row" id="quickRow" style="margin-top:14px;">
-      <label>Quick meals (under 20 min) target</label>
+      <label>Quick dinners (20 min or less)</label>
       <input type="range" min="1" max="3" value="2" id="quickTarget">
       <span class="val" id="quickTargetVal">2</span>
     </div>
@@ -313,6 +360,7 @@
   <div id="recipeCards" data-tab="list" style="display:none; margin-top:36px; padding-top:28px; border-top:1px solid var(--line);">
     <h2>Recipe cards</h2>
     <div class="subtle">Ingredient amounts are scaled to the servings you picked. Tap ★ Favorites or ask me in chat for a real photo of any dish.</div>
+    <button id="downloadCardsBtn" type="button" class="mini-btn go" style="margin:6px 0 14px;padding:10px 16px;font-size:14px;">⬇️ Download all recipe cards for the week</button>
     <div id="recipeRoot" style="display:flex; flex-direction:column; gap:14px;"></div>
   </div>
 
@@ -352,10 +400,10 @@
   <button id="confirmBtn" type="button" disabled>Build list</button>
 </div>
 <nav id="bottomNav" aria-label="Sections">
-  <button type="button" data-go="plan"><span class="ni">📋</span>Plan</button>
+  <button type="button" data-go="plan"><span class="ni">🏠</span>Start</button>
   <button type="button" data-go="meals"><span class="ni">🍽️</span>Meals</button>
-  <button type="button" data-go="deals"><span class="ni">🔥</span>Deals</button>
-  <button type="button" data-go="list"><span class="ni">🛒</span>List</button>
+  <button type="button" data-go="deals"><span class="ni">🏷️</span>On sale</button>
+  <button type="button" data-go="list"><span class="ni">🛒</span>Shopping</button>
 </nav>
 
 <div id="ratingOverlay" style="display:none;position:fixed;inset:0;background:rgba(43,33,24,0.45);z-index:55;align-items:flex-end;justify-content:center;">
@@ -609,6 +657,7 @@ const defaultCatalog = {
   guacamole:{name:"Guacamole",unit:"tub",price:3.99,cat:"Pantry"},
   olives:{name:"Olives",unit:"jar",price:3.49,cat:"Pantry"},
   chickpeas:{name:"Chickpeas, canned",unit:"can",price:1.0,cat:"Pantry"},
+  hot_sauce:{name:"Frank's hot sauce",unit:"bottle",price:2.99,cat:"Pantry"},
   soy_sauce:{name:"Soy sauce",unit:"bottle",price:2.99,cat:"Pantry"},
   teriyaki_sauce:{name:"Teriyaki sauce",unit:"bottle",price:2.99,cat:"Pantry"},
   marinade:{name:"Grill seasoning packet",unit:"packet",price:2.0,cat:"Pantry"},
@@ -714,6 +763,7 @@ const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
 // Each weekly update adds a fresh batch of meals/snacks tagged with this id.
 // "New this week" shows only the current batch (minus anything you've starred).
+const PHOTO_KEY = 'mealPlannerPhotos', PIXA_KEY = 'mealPlannerPixabayKey';
 const CURRENT_BATCH = "2026-10-12";
 const CURRENT_BATCH_LABEL = "Oct 12";
 const BATCH_DATE = new Date("2026-10-12T00:00:00");
@@ -979,127 +1029,186 @@ const meals = [
     steps:["Preheat the oven to 425°F (220°C).","Halve the little potatoes, slice the sausage, peppers and onion, and toss everything with oil, salt and pepper on a sheet pan.","Roast 30-35 minutes, stirring once, until the potatoes are tender and browned."],
     ing:[["sausage",1],["baby_potatoes",1],["peppers",1],["onions",0.33]]},
 
-  // ================= New this week (batch 2026-10-12): 40 meals =================
-  {n:"Bacon & cheddar breakfast wraps",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, eggs, cheese, tortillas",baseServ:4,quick:true,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Cook the bacon in a skillet over medium heat until crisp, 8-10 minutes; drain and crumble.", "Scramble the eggs in a lightly oiled skillet until just set.", "Warm the tortillas, then fill with eggs, bacon and shredded cheese.", "Fold in the sides, roll up and serve."],
+  {n:"Bacon & cheddar breakfast wraps",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, eggs, cheese, tortillas",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Pull the eggs off the heat while they still look slightly wet; they finish cooking in the wrap.",pantry:"salt, pepper",batch:CURRENT_BATCH,
+    steps:["Lay the bacon in a cold large skillet, set over medium heat and cook 8-10 minutes, turning, until crisp. Drain on paper towels and crumble.", "Whisk the eggs with {x:1/4 tsp} salt, {x:1/8 tsp} pepper and {x:1 tbsp} milk or water.", "Pour off all but a thin film of bacon fat. Cook the eggs over medium-low heat, stirring slowly, 2-3 minutes until just set but still glossy.", "Warm each tortilla 20 seconds per side in a dry pan. Fill with eggs, bacon and shredded cheese.", "Fold in the sides and roll tightly. For a crisp outside, toast seam-side down 1 minute."],
     ing:[["bacon", 1], ["eggs", 1], ["tortillas", 1], ["cheese", 0.5]]},
-  {n:"Orange yogurt granola bowls",type:"Breakfast",cuisine:"Breakfast",note:"Greek yogurt, oranges, granola",baseServ:4,quick:true,method:"assembly",batch:CURRENT_BATCH,
-    steps:["Peel the oranges and break into segments.", "Spoon the yogurt into bowls.", "Top with orange segments and a generous scoop of granola.", "Serve right away so the granola stays crunchy."],
+  {n:"Orange yogurt granola bowls",type:"Breakfast",cuisine:"Breakfast",note:"Greek yogurt, oranges, granola",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Keep the granola separate until serving so it stays crunchy.",pantry:"honey (optional), cinnamon",batch:CURRENT_BATCH,
+    steps:["Cut the top and bottom off each orange, stand it up and slice off the peel and white pith in strips. Cut between the membranes to release the segments.", "Stir {x:1 tsp} honey into the yogurt if you like it sweeter.", "Divide the yogurt among bowls and arrange the orange segments on top.", "Add the granola just before eating, plus a pinch of cinnamon.", "Squeeze any leftover orange juice over the top."],
     ing:[["yogurt", 4], ["oranges", 0.34], ["granola", 1]]},
-  {n:"Bacon, potato & egg skillet",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, yellow potatoes, eggs",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Cube the potatoes and boil 6-8 minutes until just tender; drain.", "Cook the bacon in a large skillet until crisp; remove, leaving a little fat. Crumble the bacon.", "Fry the potatoes and diced onion in the bacon fat until golden, about 8 minutes.", "Make wells in the skillet, crack in the eggs, cover and cook 3-4 minutes. Sprinkle with bacon."],
+  {n:"Bacon, potato & egg skillet",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, yellow potatoes, eggs",baseServ:4,method:"skillet",time:"35 min",tip:"Dry the boiled potatoes well. Dry potatoes brown, wet ones steam.",pantry:"salt, pepper, paprika",batch:CURRENT_BATCH,
+    steps:["Cut the potatoes into 1/2-inch cubes. Cover with cold salted water, bring to a boil and cook 5-6 minutes until just tender; drain well.", "Cook the bacon in a large skillet over medium heat until crisp, 8-10 minutes. Lift out, crumble, and leave 2 tablespoons of fat in the pan.", "Add the potatoes and diced onion to the fat. Cook, stirring only every 2 minutes, 8-10 minutes until deeply golden. Season with {x:1/2 tsp} salt, {x:1/4 tsp} pepper and {x:1/2 tsp} paprika.", "Make wells in the potatoes and crack in the eggs. Cover and cook 3-4 minutes for runny yolks, 5-6 for set.", "Scatter the bacon on top and serve from the pan."],
     ing:[["bacon", 1], ["yellow_potatoes", 0.5], ["eggs", 1], ["onions", 0.2]]},
-  {n:"Sweet potato pancakes",type:"Breakfast",cuisine:"Breakfast",note:"Pancake mix, mashed sweet potato, syrup",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Microwave or boil the sweet potatoes until soft, then mash until smooth.", "Mix the pancake mix as directed on the box, then stir in the mashed sweet potato and a pinch of cinnamon.", "Cook 1/4 cup scoops on a buttered griddle over medium heat 2-3 minutes per side.", "Serve with butter and syrup."],
+  {n:"Sweet potato pancakes",type:"Breakfast",cuisine:"Breakfast",note:"Pancake mix, mashed sweet potato, syrup",baseServ:4,method:"skillet",time:"30 min",tip:"These brown fast because of the sweet potato sugars. Keep the heat at medium, not high.",pantry:"cinnamon, salt, milk",batch:CURRENT_BATCH,
+    steps:["Prick the sweet potatoes and microwave 5-7 minutes until soft (or boil peeled chunks 12 minutes). Mash until smooth and let cool 5 minutes.", "Mix the pancake mix as directed on the box, then whisk in the mashed sweet potato, {x:1/2 tsp} cinnamon and a pinch of salt. Thin with a splash of milk if the batter is stiff.", "Heat a griddle or skillet over medium heat and brush lightly with butter.", "Scoop 1/4 cup batter per pancake. Cook 2-3 minutes until bubbles form and the edges look set, flip and cook 2 minutes more.", "Serve warm with butter and syrup."],
     ing:[["pancake_mix", 1], ["sweet_potato", 1], ["syrup", 0.5], ["butter", 0.25]]},
-  {n:"Ham, egg & cheese Hawaiian sliders",type:"Breakfast",cuisine:"Breakfast",note:"Sweet rolls, ham, eggs, cheese",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 350°F (175°C).", "Scramble the eggs until barely set.", "Split the rolls as a sheet and layer the bottoms with ham, eggs and cheese; replace the tops.", "Brush with melted butter and bake 10-12 minutes until the cheese melts. Slice and serve."],
+  {n:"Ham, egg & cheese Hawaiian sliders",type:"Breakfast",cuisine:"Breakfast",note:"Sweet rolls, ham, eggs, cheese",baseServ:4,method:"oven",time:"30 min",tip:"Slightly undercook the eggs. They set further in the oven.",pantry:"garlic powder, salt",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 350°F (175°C). Keep the rolls connected as one sheet and slice horizontally through the middle.", "Scramble the eggs with a pinch of salt in a buttered skillet over medium-low heat until barely set, about 2 minutes.", "Lay the bottom half in a baking dish. Layer ham, cheese and eggs, then replace the top.", "Melt {x:1 tbsp} butter with {x:1/2 tsp} garlic powder and brush over the tops.", "Cover with foil and bake 10 minutes, uncover and bake 5 more until the tops are golden and the cheese is melted. Cut apart."],
     ing:[["hawaiian_rolls", 1], ["eggs", 1], ["ham_deli", 0.5], ["cheese", 0.5], ["butter", 0.25]]},
-  {n:"Cottage cheese & fruit plates",type:"Breakfast",cuisine:"Breakfast",note:"Cottage cheese, grapes, oranges",baseServ:4,quick:true,method:"assembly",batch:CURRENT_BATCH,
-    steps:["Peel and segment the oranges and wash the grapes.", "Spoon cottage cheese onto plates.", "Arrange the grapes and orange segments alongside.", "Add toast or a drizzle of honey if you like."],
+  {n:"Cottage cheese & fruit plates",type:"Breakfast",cuisine:"Breakfast",note:"Cottage cheese, grapes, oranges",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Add toast or a handful of granola for a more filling plate.",pantry:"honey, cinnamon",batch:CURRENT_BATCH,
+    steps:["Peel the oranges, removing the white pith, and break into segments.", "Rinse the grapes and pull them off the stems.", "Spoon the cottage cheese onto plates or into shallow bowls.", "Arrange the grapes and oranges alongside and finish with a drizzle of honey and a pinch of cinnamon."],
     ing:[["cottage_cheese", 4], ["grapes", 1], ["oranges", 0.34]]},
-  {n:"Veggie egg muffin cups",type:"Breakfast",cuisine:"Breakfast",note:"Eggs, peppers, onion, cheese",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 375°F (190°C) and grease a muffin tin.", "Dice the peppers and onion finely.", "Whisk the eggs with salt and pepper, stir in the vegetables and half the cheese, and pour into the cups.", "Top with the remaining cheese and bake 18-20 minutes until puffed and set."],
+  {n:"Veggie egg muffin cups",type:"Breakfast",cuisine:"Breakfast",note:"Eggs, peppers, onion, cheese",baseServ:4,method:"oven",time:"30 min",tip:"Make a double batch. They reheat in the microwave in 30 seconds.",pantry:"oil, salt, pepper, milk",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 375°F (190°C). Grease a 12-cup muffin tin well, or use silicone liners.", "Finely dice the peppers and onion. Sauté in {x:1 tsp} oil 3 minutes to soften and drive off moisture.", "Whisk the eggs with {x:1/2 tsp} salt, {x:1/4 tsp} pepper and {x:2 tbsp} milk. Stir in the vegetables and half the cheese.", "Fill each cup about 3/4 full and top with the remaining cheese.", "Bake 18-20 minutes until puffed and a knife comes out clean. Rest 3 minutes before lifting out."],
     ing:[["eggs", 1], ["peppers", 0.5], ["onions", 0.2], ["cheese", 0.5]]},
-  {n:"Ham, egg & cheese bagels",type:"Breakfast",cuisine:"Breakfast",note:"Bagels, ham, eggs, cheese",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Split and toast the bagels.", "Fry the eggs in a lightly oiled skillet to your liking.", "Warm the ham in the skillet for a minute.", "Layer the ham, egg and cheese on the bagels and serve hot."],
+  {n:"Ham, egg & cheese bagels",type:"Breakfast",cuisine:"Breakfast",note:"Bagels, ham, eggs, cheese",baseServ:4,quick:true,method:"skillet",time:"15 min",tip:"Break the yolk with the spatula before assembling for a neater sandwich.",pantry:"butter, salt, pepper",batch:CURRENT_BATCH,
+    steps:["Split the bagels and toast until golden.", "Heat {x:1 tsp} butter in a skillet over medium heat. Fry the eggs 2-3 minutes, flipping if you like them over-easy, seasoning with salt and pepper.", "In the last minute, warm the ham slices in the same pan and lay a slice of cheese on each so it softens.", "Build the sandwiches: ham, cheese, egg, then the bagel top.", "Serve hot."],
     ing:[["bagels", 1], ["eggs", 1], ["ham_deli", 0.5], ["cheese", 0.5]]},
-  {n:"Banana oat pancakes",type:"Breakfast",cuisine:"Breakfast",note:"Oats, bananas, eggs",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Blend the oats, bananas and eggs with a pinch of cinnamon into a thick batter.", "Heat a lightly buttered skillet over medium heat.", "Cook scoops of batter 2-3 minutes per side until golden.", "Serve with syrup."],
+  {n:"Banana oat pancakes",type:"Breakfast",cuisine:"Breakfast",note:"Oats, bananas, eggs",baseServ:4,method:"skillet",time:"20 min",tip:"Riper bananas mean sweeter pancakes. Brown-spotted ones are perfect.",pantry:"cinnamon, salt, butter",batch:CURRENT_BATCH,
+    steps:["Add the oats, ripe bananas and eggs to a blender with {x:1/2 tsp} cinnamon and a pinch of salt. Blend until smooth and let rest 5 minutes to thicken.", "Heat a nonstick skillet over medium heat and brush lightly with butter.", "Pour scoops of batter about 3 inches wide. Cook 2-3 minutes until the surface looks matte and the bottoms are golden.", "Flip carefully and cook 1-2 minutes more.", "Serve with syrup and sliced banana."],
     ing:[["oats", 1], ["bananas", 2], ["eggs", 0.5], ["syrup", 0.5]]},
-  {n:"Breakfast pizza English muffins",type:"Breakfast",cuisine:"Breakfast",note:"English muffins, eggs, cheese, marinara",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 400°F (200°C).", "Split and toast the English muffins lightly.", "Top each half with a spoonful of marinara, scrambled egg and cheese.", "Bake 6-8 minutes until the cheese is bubbly."],
+  {n:"Breakfast pizza English muffins",type:"Breakfast",cuisine:"Breakfast",note:"English muffins, eggs, cheese, marinara",baseServ:4,method:"oven",time:"20 min",tip:"Pull the eggs early. Cooked-through eggs turn rubbery in the oven.",pantry:"Italian seasoning, salt",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 400°F (200°C). Split the English muffins and toast lightly on a sheet pan 3 minutes.", "Scramble the eggs with a pinch of salt until just barely set.", "Spread 1 tablespoon marinara on each half, then top with eggs and shredded cheese.", "Add {x:1/4 tsp} Italian seasoning over the top.", "Bake 6-8 minutes until the cheese is melted and bubbling at the edges."],
     ing:[["english_muffins", 1], ["eggs", 0.5], ["cheese", 0.5], ["marinara", 0.25]]},
-  {n:"Crispy chicken nugget wraps",type:"Lunch",cuisine:"Lunch",note:"Chicken nuggets, lettuce, cheese, tortillas",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Bake the nuggets as directed on the bag, usually 15-18 minutes at 400°F (200°C).", "Warm the tortillas and shred the lettuce.", "Fill the tortillas with nuggets, lettuce and cheese.", "Roll up and serve with your favorite dipping sauce."],
+  {n:"Crispy chicken nugget wraps",type:"Lunch",cuisine:"Lunch",note:"Chicken nuggets, lettuce, cheese, tortillas",baseServ:4,method:"oven",time:"25 min",tip:"Bake on the top rack for the crispest coating.",pantry:"dipping sauce of your choice",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C). Spread the nuggets on a sheet pan and bake 14-16 minutes, flipping once, until crisp and hot inside.", "Shred the lettuce and shred or slice the cheese.", "Warm the tortillas 15-20 seconds each so they fold without cracking.", "Fill with nuggets, lettuce and cheese. Add a drizzle of ranch, BBQ or honey mustard.", "Roll up and slice in half."],
     ing:[["chicken_nuggets", 1], ["tortillas", 1], ["lettuce", 0.5], ["cheese", 0.5]]},
-  {n:"Pizza & side salad",type:"Lunch",cuisine:"Italian",note:"Meijer frozen pizza, salad kit",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Bake the pizzas as directed on the box.", "Toss the salad kit with its dressing.", "Slice the pizzas and serve with the salad."],
+  {n:"Pizza & side salad",type:"Lunch",cuisine:"Italian",note:"Meijer frozen pizza, salad kit",baseServ:4,method:"oven",time:"25 min",tip:"Add sliced cucumber or bell pepper to the salad to stretch it.",batch:CURRENT_BATCH,
+    steps:["Heat the oven as directed on the pizza box (usually 400-425°F).", "Bake the pizzas directly on the rack for crisp bottoms, 12-15 minutes.", "Meanwhile, empty the salad kit into a large bowl and toss with the dressing.", "Let the pizzas rest 3 minutes, then slice.", "Serve each slice with a big scoop of salad."],
     ing:[["frozen_pizza", 2], ["saladkit", 1]]},
-  {n:"Ham & cheese Hawaiian sliders",type:"Lunch",cuisine:"Lunch",note:"Sweet rolls, ham, cheese",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 350°F (175°C).", "Split the rolls as a sheet and layer the bottoms with ham and cheese; replace the tops.", "Brush with melted butter and cover with foil.", "Bake 12-15 minutes until the cheese melts. Slice apart and serve."],
+  {n:"Ham & cheese Hawaiian sliders",type:"Lunch",cuisine:"Lunch",note:"Sweet rolls, ham, cheese",baseServ:4,method:"oven",time:"25 min",tip:"Add a few dill pickle slices for tang against the sweet rolls.",pantry:"mustard, garlic powder, onion powder",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 350°F (175°C). Keep the rolls connected and slice the whole sheet in half horizontally.", "Spread {x:1 tbsp} mustard (or mayo) on the cut sides. Layer the bottoms with ham and cheese, then replace the tops.", "Melt {x:2 tbsp} butter with {x:1/2 tsp} garlic powder and {x:1/2 tsp} onion powder; brush over the tops.", "Cover with foil and bake 12 minutes, then uncover and bake 3-4 minutes until golden.", "Cut into individual sliders."],
     ing:[["hawaiian_rolls", 1], ["ham_deli", 0.75], ["cheese", 0.75], ["butter", 0.25]]},
-  {n:"Turkey hummus wraps",type:"Lunch",cuisine:"Lunch",note:"Tortillas, turkey, hummus, cucumber",baseServ:4,quick:true,method:"assembly",batch:CURRENT_BATCH,
-    steps:["Spread hummus over each tortilla.", "Layer on turkey, sliced cucumber and sliced bell pepper.", "Roll up tightly and slice in half.", "Serve cold."],
+  {n:"Turkey hummus wraps",type:"Lunch",cuisine:"Lunch",note:"Tortillas, turkey, hummus, cucumber",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Hummus acts as the glue, so spread it edge to edge for a tight roll.",pantry:"salt, pepper",batch:CURRENT_BATCH,
+    steps:["Slice the cucumber into thin sticks and the bell pepper into thin strips.", "Spread 2 tablespoons hummus over each tortilla, leaving a 1-inch border.", "Layer on turkey, cucumber, pepper and a handful of lettuce or spinach if you have it.", "Fold the sides in and roll up tightly, then slice in half on a diagonal.", "Wrap in foil to pack for later."],
     ing:[["tortillas", 1], ["hummus", 1], ["turkey_deli", 0.75], ["cucumber", 1], ["peppers", 0.5]]},
-  {n:"Chunky soup & grilled cheese",type:"Lunch",cuisine:"Lunch",note:"Campbell's Chunky soup, grilled cheese",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Heat the soup in a pot over medium heat, stirring occasionally, until hot.", "Butter one side of each bread slice and fill with cheese, butter side out.", "Toast in a skillet over medium heat 2-3 minutes per side until golden and melted.", "Serve the sandwiches with the soup."],
+  {n:"Chunky soup & grilled cheese",type:"Lunch",cuisine:"Lunch",note:"Campbell's Chunky soup, grilled cheese",baseServ:4,method:"skillet",time:"20 min",tip:"Medium-low heat is the secret. High heat burns the bread before the cheese melts.",pantry:"butter",batch:CURRENT_BATCH,
+    steps:["Pour the soup into a pot with a splash of water. Heat over medium, stirring, until steaming, about 6 minutes.", "Butter one side of each slice of bread. Place two slices butter-side down in a cold skillet and top with cheese.", "Cover with the second slice, butter-side up. Cook over medium-low heat 3-4 minutes per side until deep golden and the cheese is melted.", "Cut the sandwiches in half and serve with the soup for dipping."],
     ing:[["chunky_soup", 4], ["bread", 1], ["cheese", 0.75], ["butter", 0.25]]},
-  {n:"Southwest corn & bean rice bowls",type:"Lunch",cuisine:"Mexican",note:"Corn, black beans, rice, salsa",baseServ:4,method:"boil",batch:CURRENT_BATCH,
-    steps:["Cook the rice as directed on the bag.", "Drain and rinse the beans and corn, then warm them in a pan with a pinch of cumin.", "Spoon the rice into bowls and top with the beans and corn.", "Finish with salsa and shredded cheese."],
+  {n:"Southwest corn & bean rice bowls",type:"Lunch",cuisine:"Mexican",note:"Corn, black beans, rice, salsa",baseServ:4,method:"boil",time:"25 min",tip:"Let the corn sit undisturbed 2 minutes in the pan for a little char.",pantry:"oil, cumin, chili powder, salt",batch:CURRENT_BATCH,
+    steps:["Cook the rice as directed on the bag, adding a pinch of salt.", "Drain and rinse the beans and corn.", "Warm {x:1 tsp} oil in a skillet. Add the beans, corn, {x:1/2 tsp} cumin, {x:1/2 tsp} chili powder and {x:1/4 tsp} salt and cook 4-5 minutes until hot and slightly browned.", "Spoon rice into bowls, top with the bean-corn mixture and salsa, and finish with shredded cheese.", "Add sliced avocado or a spoon of sour cream if you have it."],
     ing:[["rice", 1], ["canned_beans", 2], ["canned_veg", 2], ["salsa", 0.5], ["cheese", 0.5]]},
-  {n:"BBQ chicken tenderloin sandwiches",type:"Lunch",cuisine:"American",note:"Chicken tenderloins, BBQ sauce, buns",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Cut the tenderloins into bite-size pieces and season with salt and pepper.", "Cook in a lightly oiled skillet over medium-high heat 6-8 minutes until no longer pink inside.", "Stir in the BBQ sauce and simmer 2 minutes.", "Pile onto the buns and serve."],
+  {n:"BBQ chicken tenderloin sandwiches",type:"Lunch",cuisine:"American",note:"Chicken tenderloins, BBQ sauce, buns",baseServ:4,method:"skillet",time:"25 min",tip:"Thin the sauce with 1 tablespoon water if it clumps.",pantry:"oil, paprika, garlic powder, salt",batch:CURRENT_BATCH,
+    steps:["Cut the tenderloins into 1-inch pieces. Season with {x:1/2 tsp} salt, {x:1/2 tsp} paprika and {x:1/4 tsp} garlic powder.", "Heat {x:1 tbsp} oil in a large skillet over medium-high heat. Cook the chicken 6-7 minutes, stirring, until golden and no longer pink (165°F / 74°C).", "Turn the heat to low and stir in the BBQ sauce. Simmer 2 minutes until glossy.", "Toast the buns cut-side down in a dry pan 1 minute.", "Pile the chicken onto the buns and top with pickles or slaw."],
     ing:[["chicken_tenderloin", 1.25], ["bbq_sauce", 1], ["buns", 1]]},
-  {n:"Italian deli sandwiches",type:"Lunch",cuisine:"Italian",note:"Deli meat, cheese, lettuce, tomato, buns",baseServ:4,quick:true,method:"assembly",batch:CURRENT_BATCH,
-    steps:["Split the buns.", "Layer on the deli meat, cheese, sliced tomato and lettuce.", "Add a drizzle of oil and a pinch of oregano if you like.", "Close and serve."],
+  {n:"Italian deli sandwiches",type:"Lunch",cuisine:"Italian",note:"Deli meat, cheese, lettuce, tomato, buns",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Salt the tomato slices. It makes a noticeable difference.",pantry:"oil, vinegar, Italian seasoning, salt, pepper",batch:CURRENT_BATCH,
+    steps:["Split the buns and lightly toast them if you like.", "Mix {x:1 tbsp} oil, {x:2 tsp} vinegar and {x:1/2 tsp} Italian seasoning in a small bowl; drizzle over the cut sides.", "Layer on the deli meat, cheese, thin-sliced tomato and shredded lettuce.", "Season the tomato with a pinch of salt and pepper.", "Close, press down and slice in half."],
     ing:[["lunch_meat", 2], ["buns", 1], ["cheese", 0.5], ["lettuce", 0.5], ["tomato", 0.5]]},
-  {n:"Loaded sweet potato lunch bowls",type:"Lunch",cuisine:"Mexican",note:"Baked sweet potatoes, black beans, salsa",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 425°F (220°C). Prick the sweet potatoes and bake 40-45 minutes until tender (or microwave 8-10 minutes).", "Warm the beans in a small pot.", "Split the potatoes and fluff the insides.", "Top with beans, cheese, salsa and sour cream."],
+  {n:"Loaded sweet potato lunch bowls",type:"Lunch",cuisine:"Mexican",note:"Baked sweet potatoes, black beans, salsa",baseServ:4,method:"oven",time:"55 min",tip:"Bake extras and save them: they make a 3-minute lunch later in the week.",pantry:"oil, cumin, chili powder, salt",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C). Scrub the sweet potatoes, prick all over with a fork, rub with oil and bake on a foil-lined sheet 40-50 minutes until a knife slides in easily (or microwave 8-10 minutes).", "Warm the beans in a small pot with {x:1/2 tsp} cumin, {x:1/4 tsp} chili powder and a pinch of salt for 5 minutes.", "Split the potatoes lengthwise and fluff the insides with a fork.", "Top with beans, shredded cheese, salsa and a spoon of sour cream.", "Add a squeeze of lime if you have it."],
     ing:[["sweet_potato", 2], ["canned_beans", 1], ["cheese", 0.5], ["salsa", 0.5], ["sourcream", 0.5]]},
-  {n:"Egg salad sandwiches",type:"Lunch",cuisine:"Lunch",note:"Eggs, mayo, celery, bread",baseServ:4,method:"boil",batch:CURRENT_BATCH,
-    steps:["Cover the eggs with cold water, bring to a boil, then turn off the heat, cover and let stand 12 minutes. Cool in ice water and peel.", "Chop the eggs and mix with the mayo, diced celery, salt and pepper.", "Spread on the bread.", "Close the sandwiches and slice."],
+  {n:"Egg salad sandwiches",type:"Lunch",cuisine:"Lunch",note:"Eggs, mayo, celery, bread",baseServ:4,method:"boil",time:"25 min",tip:"Chill the salad 15 minutes before serving. The flavors meld.",pantry:"mustard, salt, pepper, paprika",batch:CURRENT_BATCH,
+    steps:["Place the eggs in a pot, cover with cold water by 1 inch and bring to a boil. Turn off the heat, cover and let stand 11 minutes.", "Move the eggs to ice water for 5 minutes, then peel under running water.", "Chop the eggs and mix with the mayo, finely diced celery, {x:1 tsp} mustard, {x:1/2 tsp} salt and {x:1/4 tsp} pepper.", "Taste and add a pinch of paprika or a splash of pickle juice.", "Spread on the bread and add lettuce if you like."],
     ing:[["eggs", 1], ["mayo", 0.3], ["celery", 0.5], ["bread", 1]]},
-  {n:"Pan-seared pork chops with yellow potatoes",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, broccoli",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Cut the potatoes into chunks and boil 10 minutes until tender; drain.", "Season the pork chops with salt, pepper and garlic powder.", "Sear the chops in a hot oiled skillet 4-5 minutes per side until the inside reaches 145°F (63°C); rest 5 minutes.", "Steam the broccoli, then serve everything together."],
+  {n:"Pan-seared pork chops with yellow potatoes",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, broccoli",baseServ:4,method:"skillet",time:"40 min",tip:"Bone-in chops stay juicier. Resting 5 minutes lets the juices redistribute.",pantry:"oil, butter, salt, pepper, garlic powder, paprika",batch:CURRENT_BATCH,
+    steps:["Take the chops out of the fridge 15 minutes ahead. Pat very dry and season both sides with {x:1 1/2 tsp} salt, {x:1/2 tsp} pepper, {x:1 tsp} garlic powder and {x:1 tsp} paprika.", "Cut the potatoes into 1-inch chunks, cover with salted cold water, boil 10-12 minutes until tender; drain and let steam dry.", "Heat {x:2 tbsp} oil in a large skillet over medium-high until shimmering. Sear the chops 4-5 minutes per side without moving them, until deep golden and 145°F (63°C) inside.", "Add {x:2 tbsp} butter to the pan, tilt and spoon it over the chops for the last minute. Rest the chops 5 minutes.", "In the same pan, brown the potatoes in the drippings 5 minutes. Steam the broccoli 4 minutes and serve everything together."],
     ing:[["pork_chops", 2.5], ["yellow_potatoes", 1], ["broccoli", 2], ["pantrystaples", 1]]},
-  {n:"Smothered pork chops over rice",type:"Dinner",cuisine:"American",note:"Pork chops, mushroom soup, onions, rice",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Season the pork chops and brown them in an oiled skillet 3 minutes per side; set aside.", "Sauté the sliced onion in the same skillet until soft.", "Stir in the condensed soup with a splash of water, return the chops, cover and simmer 15 minutes until cooked through.", "Meanwhile cook the rice; serve the chops and sauce over it."],
+  {n:"Smothered pork chops over rice",type:"Dinner",cuisine:"American",note:"Pork chops, mushroom soup, onions, rice",baseServ:4,method:"skillet",time:"45 min",tip:"Flouring the chops thickens the gravy and gives them a nice crust.",pantry:"oil, flour, salt, pepper, garlic powder",batch:CURRENT_BATCH,
+    steps:["Season the chops with {x:1 tsp} salt, {x:1/2 tsp} pepper and {x:1 tsp} garlic powder, then dredge lightly in {x:2 tbsp} flour.", "Brown in {x:2 tbsp} oil over medium-high heat 3 minutes per side; set aside.", "Add the sliced onion to the pan with a splash of water and cook 5 minutes until soft and golden, scraping up the browned bits.", "Whisk in the condensed soup and {x:1/2 cup} water. Return the chops, cover and simmer on low 15-18 minutes until 145°F (63°C).", "Meanwhile cook the rice. Serve the chops and gravy over rice."],
     ing:[["pork_chops", 2.5], ["condensed_soup", 2], ["onions", 0.33], ["rice", 1]]},
-  {n:"Apple cider pork chops",type:"Dinner",cuisine:"American",note:"Pork chops, apples, apple cider",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Season the pork chops with salt and pepper and sear in a skillet 4 minutes per side; set aside.", "Add butter and sliced apples to the skillet and cook 3 minutes.", "Pour in the apple cider and simmer until reduced by half.", "Return the chops to the sauce for 2 minutes and serve with the apples."],
+  {n:"Apple cider pork chops",type:"Dinner",cuisine:"American",note:"Pork chops, apples, apple cider",baseServ:4,method:"skillet",time:"35 min",tip:"Granny Smith apples hold their shape and balance the sweet cider.",pantry:"oil, butter, salt, pepper, thyme, vinegar",batch:CURRENT_BATCH,
+    steps:["Season the chops with {x:1 tsp} salt, {x:1/2 tsp} pepper and {x:1/2 tsp} thyme or sage if you have it.", "Sear in {x:1 tbsp} oil over medium-high heat 4 minutes per side. Move to a plate.", "Lower the heat, add {x:2 tbsp} butter and the sliced apples and onion. Cook 4 minutes until starting to caramelize.", "Pour in the apple cider and {x:1 tbsp} apple cider vinegar or mustard. Simmer 4-5 minutes until the sauce is reduced by half.", "Return the chops and cook 2-3 minutes until 145°F (63°C). Spoon the apples and sauce over the top."],
     ing:[["pork_chops", 2.5], ["apples", 1], ["apple_cider", 0.5], ["butter", 0.25]]},
-  {n:"Oven BBQ pork chops with corn",type:"Dinner",cuisine:"American",note:"Pork chops, BBQ sauce, corn",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 375°F (190°C).", "Place the chops in a baking dish, season, and brush generously with BBQ sauce.", "Bake 25-30 minutes until the inside reaches 145°F (63°C), basting once.", "Warm the corn and serve alongside."],
+  {n:"Oven BBQ pork chops with corn",type:"Dinner",cuisine:"American",note:"Pork chops, BBQ sauce, corn",baseServ:4,method:"oven",time:"40 min",tip:"Add the sauce after searing. Sugar burns if it hits a hot pan too early.",pantry:"oil, butter, paprika, garlic powder, salt",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 400°F (200°C). Season the chops with {x:1 tsp} salt, {x:1 tsp} paprika and {x:1/2 tsp} garlic powder.", "Sear the chops in an oven-safe skillet with {x:1 tbsp} oil 2 minutes per side for color.", "Brush generously with BBQ sauce and transfer to the oven. Bake 12-15 minutes until 145°F (63°C), brushing with more sauce halfway.", "Warm the corn with {x:1 tbsp} butter and a pinch of salt.", "Rest the chops 5 minutes and serve with the corn."],
     ing:[["pork_chops", 2.5], ["bbq_sauce", 1], ["canned_veg", 2]]},
-  {n:"Slow cooker pork chops & potatoes",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, onion, soup",baseServ:4,method:"slowcooker",batch:CURRENT_BATCH,
-    steps:["Layer the potato chunks and sliced onion in the slow cooker.", "Place the seasoned pork chops on top and spoon the condensed soup over.", "Cover and cook on low 6-7 hours or high 3-4 hours.", "Stir the sauce and serve the chops over the potatoes."],
+  {n:"Slow cooker pork chops & potatoes",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, onion, soup",baseServ:4,method:"slowcooker",time:"15 min + 6-7 hr",tip:"Bone-in chops are forgiving in a slow cooker. They won't dry out like boneless.",pantry:"salt, pepper, garlic powder, paprika",batch:CURRENT_BATCH,
+    steps:["Spread the potato chunks and sliced onion on the bottom of the slow cooker.", "Season the chops with {x:1 tsp} salt, {x:1/2 tsp} pepper, {x:1 tsp} garlic powder and {x:1/2 tsp} paprika and nestle them on top.", "Stir the soup with {x:1/4 cup} water and pour over everything.", "Cover and cook on low 6-7 hours or on high 3-4 hours, until the pork is tender and the potatoes are soft.", "Stir the sauce, adjust the salt and serve with some sauce spooned over."],
     ing:[["pork_chops", 2.5], ["yellow_potatoes", 1], ["condensed_soup", 1], ["onions", 0.33]]},
-  {n:"Sheet-pan pork chops with Brussels sprouts",type:"Dinner",cuisine:"American",note:"Pork chops, Brussels sprouts, sweet potatoes",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 425°F (220°C).", "Toss the cubed sweet potatoes and halved Brussels sprouts with oil, salt and pepper and spread on a sheet pan.", "Nestle the seasoned chops in between.", "Roast 20-25 minutes until the vegetables are browned and the pork is 145°F (63°C)."],
+  {n:"Sheet-pan pork chops with Brussels sprouts",type:"Dinner",cuisine:"American",note:"Pork chops, Brussels sprouts, sweet potatoes",baseServ:4,method:"oven",time:"45 min",tip:"Cut-side down is the secret to caramelized Brussels sprouts.",pantry:"oil, salt, pepper, garlic powder, paprika, honey",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C) and put a large sheet pan inside to preheat.", "Toss the cubed sweet potatoes with {x:1 tbsp} oil, {x:1/2 tsp} salt and {x:1/2 tsp} paprika. Spread on the hot pan and roast 10 minutes.", "Toss the halved Brussels sprouts with {x:1 tbsp} oil, salt and pepper. Season the chops with {x:1 tsp} salt, {x:1/2 tsp} pepper and {x:1 tsp} garlic powder.", "Add the sprouts (cut-side down) and chops to the pan. Roast 15-18 minutes until the pork reaches 145°F (63°C) and the sprouts are charred.", "Finish with a drizzle of honey or balsamic if you like."],
     ing:[["pork_chops", 2.5], ["brussels", 2], ["sweet_potato", 1.5], ["pantrystaples", 1]]},
-  {n:"Oven BBQ back ribs with sweet potatoes",type:"Dinner",cuisine:"American",note:"Pork back ribs, BBQ sauce, sweet potatoes",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 300°F (150°C). Season the ribs with salt, pepper and garlic powder.", "Wrap the ribs in foil and bake 2 to 2 1/2 hours until tender.", "Meanwhile bake the sweet potatoes at 400°F (200°C) for 45 minutes.", "Unwrap the ribs, brush with BBQ sauce and broil 5 minutes. Serve with the potatoes and corn."],
+  {n:"Oven BBQ back ribs with sweet potatoes",type:"Dinner",cuisine:"American",note:"Pork back ribs, BBQ sauce, sweet potatoes",baseServ:4,method:"oven",time:"3 hr (30 min hands-on)",tip:"Back ribs are leaner and quicker than spareribs. Tenderness is when the bones show 1/4 inch.",pantry:"brown sugar, paprika, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 300°F (150°C). Peel the thin membrane from the back of the ribs (grip with a paper towel) and pat dry.", "Mix {x:1 tbsp} brown sugar, {x:2 tsp} paprika, {x:1 tsp} garlic powder, {x:1 tsp} salt and {x:1/2 tsp} pepper and rub over both sides.", "Wrap tightly in foil, set on a sheet pan and bake 2 to 2 1/2 hours until the meat pulls back from the bones.", "Raise the oven to 425°F (220°C). Bake the sweet potatoes (pricked, on a pan) 45 minutes, then warm the corn.", "Unwrap the ribs, brush with BBQ sauce and broil 4-5 minutes until sticky and lightly charred. Rest 5 minutes and cut between the bones."],
     ing:[["pork_back_ribs", 3.5], ["bbq_sauce", 1], ["sweet_potato", 2], ["canned_veg", 2]]},
-  {n:"Honey BBQ chicken wings with veggie sticks",type:"Dinner",cuisine:"American",note:"Chicken wings, BBQ sauce, carrots, cucumber",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 425°F (220°C) and set a rack on a sheet pan.", "Pat the wings dry, season with salt and pepper and bake 40-45 minutes, flipping once, until crisp.", "Toss the hot wings in BBQ sauce.", "Serve with carrot and cucumber sticks."],
+  {n:"Honey BBQ chicken wings with veggie sticks",type:"Dinner",cuisine:"American",note:"Chicken wings, BBQ sauce, carrots, cucumber",baseServ:4,method:"oven",time:"65 min",tip:"Dry wings = crisp wings. Pat them well and don't crowd the pan.",pantry:"oil, baking powder, salt, paprika, garlic powder, honey, vinegar",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C). Set a rack on a foil-lined sheet pan and grease it.", "Pat the wings very dry. Toss with {x:1 tbsp} oil, {x:1 tsp} baking powder (optional, for crunch), {x:1 tsp} salt, {x:1 tsp} paprika and {x:1/2 tsp} garlic powder.", "Roast 20 minutes, flip and roast 20-25 minutes more until crisp and 175°F (80°C) inside.", "Warm the BBQ sauce with {x:2 tbsp} honey and {x:1 tsp} vinegar. Toss the hot wings in the sauce.", "Serve with carrot and cucumber sticks and a cool dip."],
     ing:[["chicken_wings", 3], ["bbq_sauce", 1], ["carrots", 1], ["cucumber", 1]]},
-  {n:"Chicken tenderloin broccoli stir-fry",type:"Dinner",cuisine:"Asian",note:"Chicken tenderloins, broccoli, soy sauce, rice",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Cook the rice as directed.", "Cut the tenderloins into pieces and stir-fry in an oiled skillet over high heat 5-6 minutes until cooked through.", "Add the broccoli florets and a splash of water; cover 3 minutes.", "Stir in the soy sauce and serve over rice."],
+  {n:"Chicken tenderloin broccoli stir-fry",type:"Dinner",cuisine:"Asian",note:"Chicken tenderloins, broccoli, soy sauce, rice",baseServ:4,method:"skillet",time:"30 min",tip:"Use the highest heat your stove allows and cook in batches. Crowding makes chicken steam.",pantry:"oil, honey, cornstarch, vinegar, garlic powder",batch:CURRENT_BATCH,
+    steps:["Cook the rice as directed.", "Whisk the sauce: {x:3 tbsp} soy sauce, {x:1 tbsp} honey, {x:2 tsp} cornstarch, {x:1 tsp} vinegar, {x:1/2 tsp} garlic powder and {x:1/4 cup} water.", "Slice the tenderloins into thin strips. Heat {x:1 tbsp} oil in a large skillet or wok over high heat. Stir-fry the chicken 4-5 minutes until golden; remove.", "Add {x:1 tsp} oil and the broccoli with {x:2 tbsp} water. Cover 2 minutes, then stir-fry 2 minutes more.", "Return the chicken, pour in the sauce and stir 1 minute until glossy and thick. Serve over rice."],
     ing:[["chicken_tenderloin", 1.5], ["broccoli", 2], ["soy_sauce", 0.5], ["rice", 1]]},
-  {n:"Cheesy chicken tenderloin pasta bake",type:"Dinner",cuisine:"Italian",note:"Chicken tenderloins, pasta, marinara, cheese",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 375°F (190°C) and boil the pasta 2 minutes shy of done; drain.", "Cut the tenderloins into pieces and cook in an oiled skillet 5-6 minutes until no longer pink.", "Mix the pasta, chicken and marinara in a baking dish and top with cheese.", "Bake 15-20 minutes until bubbly."],
+  {n:"Cheesy chicken tenderloin pasta bake",type:"Dinner",cuisine:"Italian",note:"Chicken tenderloins, pasta, marinara, cheese",baseServ:4,method:"oven",time:"50 min",tip:"Stir in a splash of the pasta water if the bake looks dry before it goes in the oven.",pantry:"Italian seasoning, salt, garlic powder, oil",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 375°F (190°C). Boil the pasta in salted water 2 minutes less than the package says; drain.", "Cut the tenderloins into 1-inch pieces and season with {x:1 tsp} Italian seasoning, {x:1/2 tsp} salt and {x:1/2 tsp} garlic powder.", "Cook the chicken in {x:1 tbsp} oil 5-6 minutes until golden; it will finish in the oven.", "Stir together the pasta, chicken, marinara and half the cheese in a baking dish. Top with the rest of the cheese.", "Bake 18-20 minutes until bubbling. Rest 5 minutes before serving."],
     ing:[["chicken_tenderloin", 1.5], ["pasta", 1], ["marinara", 1], ["cheese", 1]]},
-  {n:"Baked chicken tenderloins with Brussels sprouts & potatoes",type:"Dinner",cuisine:"American",note:"Chicken tenderloins, Brussels sprouts, potatoes",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 425°F (220°C).", "Toss the halved potatoes and Brussels sprouts with oil, salt and pepper and spread on a sheet pan.", "Season the tenderloins and add to the pan.", "Roast 20-25 minutes until the chicken reaches 165°F (74°C) and the vegetables are browned."],
+  {n:"Baked chicken tenderloins with Brussels sprouts & potatoes",type:"Dinner",cuisine:"American",note:"Chicken tenderloins, Brussels sprouts, potatoes",baseServ:4,method:"oven",time:"40 min",tip:"A pre-heated pan gives the vegetables a head start on browning.",pantry:"oil, salt, pepper, paprika, garlic powder, Italian seasoning",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C) with a large sheet pan inside.", "Halve the potatoes and Brussels sprouts. Toss with {x:2 tbsp} oil, {x:1 tsp} salt and {x:1/2 tsp} pepper and spread on the hot pan; roast 10 minutes.", "Toss the tenderloins with {x:1 tbsp} oil, {x:1 tsp} paprika, {x:1 tsp} garlic powder, {x:1/2 tsp} Italian seasoning and {x:1/2 tsp} salt.", "Push the vegetables aside, add the chicken and roast 12-15 minutes until 165°F (74°C) and the vegetables are well browned.", "Squeeze on lemon or a splash of vinegar before serving."],
     ing:[["chicken_tenderloin", 1.5], ["brussels", 2], ["yellow_potatoes", 1], ["pantrystaples", 1]]},
-  {n:"Chicken tenderloin fajita skillet",type:"Dinner",cuisine:"Mexican",note:"Chicken tenderloins, peppers, onion, tortillas",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Slice the tenderloins, peppers and onion into strips.", "Cook the chicken in a hot oiled skillet 5-6 minutes until cooked through; add the peppers, onion and a spoon of fajita seasoning and cook 5 more minutes.", "Warm the tortillas.", "Fill with the chicken mixture and top with salsa."],
+  {n:"Chicken tenderloin fajita skillet",type:"Dinner",cuisine:"Mexican",note:"Chicken tenderloins, peppers, onion, tortillas",baseServ:4,method:"skillet",time:"30 min",tip:"A hot, dry pan gives that restaurant sizzle. Don't stir constantly.",pantry:"chili powder, cumin, paprika, garlic powder, salt, oil",batch:CURRENT_BATCH,
+    steps:["Mix the fajita seasoning: {x:2 tsp} chili powder, {x:1 tsp} cumin, {x:1 tsp} paprika, {x:1/2 tsp} garlic powder and {x:1 tsp} salt.", "Slice the tenderloins, peppers and onion into 1/2-inch strips and toss with the seasoning and {x:1 tbsp} oil.", "Heat a large skillet over high heat. Cook the chicken in a single layer 4-5 minutes, stirring once; push aside.", "Add the peppers and onion and cook 4-5 minutes until charred at the edges but still crisp.", "Warm the tortillas and serve with salsa, sour cream and a squeeze of lime."],
     ing:[["chicken_tenderloin", 1.5], ["peppers", 1], ["onions", 0.33], ["tortillas", 1], ["salsa", 0.5], ["pantrystaples", 1]]},
-  {n:"Cheeseburger pasta skillet",type:"Dinner",cuisine:"American",note:"Ground beef, pasta, tomatoes, cheese",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Brown the ground beef with a diced onion in a large skillet; drain.", "Add the canned tomatoes, 2 cups water and the pasta; season with salt, pepper and garlic powder.", "Simmer, stirring, 12-15 minutes until the pasta is tender.", "Stir in the cheese until melted and serve."],
+  {n:"Cheeseburger pasta skillet",type:"Dinner",cuisine:"American",note:"Ground beef, pasta, tomatoes, cheese",baseServ:4,method:"skillet",time:"30 min",tip:"Add a little more water if the pan looks dry before the pasta is tender.",pantry:"garlic powder, paprika, salt, pepper, mustard",batch:CURRENT_BATCH,
+    steps:["Brown the ground beef with the diced onion in a large deep skillet over medium-high heat, 6-7 minutes, breaking it up. Drain excess fat.", "Stir in {x:1 tsp} garlic powder, {x:1 tsp} paprika, {x:1 tsp} salt and {x:1/2 tsp} pepper.", "Add the canned tomatoes, {x:2 cups} water and the pasta. Bring to a boil, cover and simmer 12-14 minutes, stirring now and then, until the pasta is tender and the sauce has thickened.", "Take off the heat, stir in the cheese until melted and add {x:1 tbsp} mustard or ketchup for burger flavor.", "Top with pickles and serve."],
     ing:[["ground_beef", 1], ["pasta", 1], ["canned_tomatoes", 1], ["cheese", 1], ["onions", 0.2]]},
-  {n:"Sloppy joes with corn",type:"Dinner",cuisine:"American",note:"Ground beef, marinara, buns, corn",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Brown the ground beef with diced onion in a skillet; drain.", "Stir in the marinara, a spoon of BBQ sauce, salt and pepper; simmer 8-10 minutes.", "Toast the buns and warm the corn.", "Spoon the beef onto the buns and serve with the corn."],
+  {n:"Sloppy joes with corn",type:"Dinner",cuisine:"American",note:"Ground beef, marinara, buns, corn",baseServ:4,method:"skillet",time:"30 min",tip:"The brown sugar and vinegar are what make it taste like a diner sloppy joe.",pantry:"ketchup, brown sugar, vinegar, chili powder, garlic powder, salt, butter",batch:CURRENT_BATCH,
+    steps:["Brown the ground beef with the diced onion over medium-high heat 6-7 minutes; drain.", "Stir in the marinara, {x:2 tbsp} ketchup, {x:1 tbsp} brown sugar, {x:1 tbsp} vinegar, {x:1 tsp} chili powder, {x:1 tsp} garlic powder and {x:1/2 tsp} salt.", "Simmer on medium-low 10 minutes, stirring, until thick enough to mound on a spoon.", "Toast the buns cut-side down in a dry pan or under the broiler.", "Warm the corn with butter and salt. Spoon the meat onto the buns and serve with the corn."],
     ing:[["ground_beef", 1], ["marinara", 0.5], ["buns", 1], ["canned_veg", 2], ["onions", 0.2]]},
-  {n:"Stuffed pepper skillet",type:"Dinner",cuisine:"American",note:"Ground beef, bell peppers, rice, tomatoes",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Cook the rice as directed.", "Brown the ground beef in a skillet; drain.", "Add the chopped peppers, canned tomatoes, salt and pepper and simmer 10 minutes until the peppers are tender.", "Stir in the rice and half the cheese, then top with the rest until melted."],
+  {n:"Stuffed pepper skillet",type:"Dinner",cuisine:"American",note:"Ground beef, bell peppers, rice, tomatoes",baseServ:4,method:"skillet",time:"35 min",tip:"Chop the peppers small so they soften in the same time the sauce reduces.",pantry:"Italian seasoning, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+    steps:["Cook the rice as directed.", "Brown the ground beef with diced onion in a large skillet 6-7 minutes; drain.", "Add the chopped peppers, canned tomatoes, {x:1 tsp} Italian seasoning, {x:1 tsp} garlic powder, {x:1 tsp} salt and {x:1/2 tsp} pepper. Cover and simmer 10-12 minutes until the peppers are soft.", "Stir in the rice and half the cheese.", "Top with the remaining cheese, cover for 2 minutes to melt, and serve."],
     ing:[["ground_beef", 1], ["peppers", 1], ["rice", 1], ["canned_tomatoes", 1], ["cheese", 0.5]]},
-  {n:"Cheesy broccoli & rice bake",type:"Dinner",cuisine:"American",note:"Broccoli, rice, cheese, soup",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 375°F (190°C). Cook the rice as directed.", "Chop the broccoli and steam or microwave 3 minutes.", "Stir the rice, broccoli, condensed soup and most of the cheese together in a baking dish.", "Top with the remaining cheese and bake 20 minutes until bubbly."],
+  {n:"Cheesy broccoli & rice bake",type:"Dinner",cuisine:"American",note:"Broccoli, rice, cheese, soup",baseServ:4,method:"oven",time:"55 min",tip:"Add cooked chicken or ham to turn this into a full one-dish dinner.",pantry:"milk, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 375°F (190°C). Cook the rice until just tender (about 15 minutes).", "Chop the broccoli into small florets and steam or microwave 3 minutes.", "Stir the rice, broccoli, soup, {x:1/2 cup} milk, {x:1/2 tsp} garlic powder, {x:1/2 tsp} salt, {x:1/4 tsp} pepper and two-thirds of the cheese in a greased baking dish.", "Top with the remaining cheese.", "Cover with foil and bake 15 minutes, uncover and bake 10 minutes until golden and bubbly."],
     ing:[["broccoli", 2], ["rice", 1], ["cheese", 1], ["condensed_soup", 1]]},
-  {n:"Roasted sweet potato & Brussels sprout tacos",type:"Dinner",cuisine:"Mexican",note:"Sweet potatoes, Brussels sprouts, tortillas",baseServ:4,method:"oven",batch:CURRENT_BATCH,
-    steps:["Preheat the oven to 425°F (220°C).", "Toss cubed sweet potatoes and halved Brussels sprouts with oil, chili powder, salt and pepper.", "Roast 25 minutes, stirring once, until browned and tender.", "Fill warm tortillas with the vegetables and top with sour cream and salsa."],
+  {n:"Roasted sweet potato & Brussels sprout tacos",type:"Dinner",cuisine:"Mexican",note:"Sweet potatoes, Brussels sprouts, tortillas",baseServ:4,method:"oven",time:"40 min",tip:"Use two pans. Crowded vegetables steam instead of roast.",pantry:"oil, chili powder, cumin, garlic powder, salt",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C). Cut the sweet potatoes into 1/2-inch cubes and halve the Brussels sprouts.", "Toss with {x:2 tbsp} oil, {x:1 1/2 tsp} chili powder, {x:1 tsp} cumin, {x:1/2 tsp} garlic powder and {x:1 tsp} salt.", "Spread in a single layer on two sheet pans and roast 22-25 minutes, stirring once, until caramelized.", "Warm the tortillas over a flame or in a dry pan.", "Fill with the vegetables, a spoon of sour cream thinned with lime, and salsa."],
     ing:[["sweet_potato", 2], ["brussels", 1], ["tortillas", 1], ["sourcream", 0.5], ["salsa", 0.5], ["pantrystaples", 1]]},
-  {n:"Sausage & broccoli pasta",type:"Dinner",cuisine:"Italian",note:"Smoked sausage, broccoli, pasta, parmesan",baseServ:4,method:"boil",batch:CURRENT_BATCH,
-    steps:["Boil the pasta in salted water, adding the broccoli florets for the last 3 minutes; drain, saving a cup of pasta water.", "Slice the sausage and brown it in a large skillet 5 minutes.", "Add the pasta and broccoli to the skillet with a splash of pasta water.", "Toss with the parmesan and serve."],
+  {n:"Sausage & broccoli pasta",type:"Dinner",cuisine:"Italian",note:"Smoked sausage, broccoli, pasta, parmesan",baseServ:4,method:"boil",time:"25 min",tip:"Pasta water has starch that turns oil and cheese into a silky sauce.",pantry:"garlic, red pepper flakes, oil, salt",batch:CURRENT_BATCH,
+    steps:["Boil the pasta in well-salted water; add the broccoli florets for the last 3 minutes. Reserve 1 cup pasta water, then drain.", "Slice the sausage into rounds and brown in a large skillet over medium-high heat 4-5 minutes.", "Add {x:3 cloves} minced garlic (or {x:1 tsp} garlic powder) and {x:1/4 tsp} red pepper flakes; cook 30 seconds.", "Add the pasta, broccoli and a splash of pasta water. Toss 1 minute, adding {x:2 tbsp} oil or butter.", "Stir in the parmesan, adjust the salt and serve."],
     ing:[["sausage", 1], ["broccoli", 1], ["pasta", 1], ["parmesan", 0.25]]},
-  {n:"Beef & bean chili",type:"Dinner",cuisine:"Mexican",note:"Ground beef, chili beans, tomatoes",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Brown the ground beef with diced onion in a large pot; drain.", "Add the beans, canned tomatoes, chili powder, cumin and salt.", "Simmer 25-30 minutes, stirring now and then.", "Serve topped with cheese and sour cream."],
+  {n:"Beef & bean chili",type:"Dinner",cuisine:"Mexican",note:"Ground beef, chili beans, tomatoes",baseServ:4,method:"skillet",time:"50 min",tip:"Chili is better the next day. Make extra and freeze portions.",pantry:"chili powder, cumin, paprika, garlic powder, salt",batch:CURRENT_BATCH,
+    steps:["Brown the ground beef with the diced onion in a large pot over medium-high heat 7 minutes; drain.", "Stir in {x:2 tbsp} chili powder, {x:2 tsp} cumin, {x:1 tsp} paprika, {x:1 tsp} garlic powder and {x:1 tsp} salt. Cook 1 minute until fragrant.", "Add the canned tomatoes, the beans (with their sauce) and {x:1 cup} water.", "Bring to a simmer, reduce heat, and cook uncovered 25-30 minutes, stirring now and then, until thick.", "Season to taste and serve with cheese, sour cream and crackers or cornbread."],
     ing:[["ground_beef", 1], ["canned_beans", 3], ["canned_tomatoes", 2], ["onions", 0.33], ["pantrystaples", 1]]},
-  {n:"Teriyaki pork chops with rice & broccoli",type:"Dinner",cuisine:"Asian",note:"Pork chops, teriyaki sauce, rice, broccoli",baseServ:4,method:"skillet",batch:CURRENT_BATCH,
-    steps:["Cook the rice as directed.", "Sear the pork chops in an oiled skillet 4 minutes per side.", "Pour in the teriyaki sauce and a splash of water, cover and simmer 5 minutes until the chops reach 145°F (63°C).", "Steam the broccoli and serve with the chops, sauce and rice."],
-    ing:[["pork_chops", 2.5], ["teriyaki_sauce", 0.5], ["rice", 1], ["broccoli", 1]]}
+  {n:"Teriyaki pork chops with rice & broccoli",type:"Dinner",cuisine:"Asian",note:"Pork chops, teriyaki sauce, rice, broccoli",baseServ:4,method:"skillet",time:"35 min",tip:"Let the sauce reduce uncovered 1 minute at the end for a thick glaze.",pantry:"oil, salt, pepper, garlic powder",batch:CURRENT_BATCH,
+    steps:["Cook the rice as directed.", "Season the chops with {x:1/2 tsp} salt, {x:1/2 tsp} pepper and {x:1/2 tsp} garlic powder.", "Sear in {x:1 tbsp} oil over medium-high heat 4 minutes per side until deep golden.", "Pour in the teriyaki sauce and {x:2 tbsp} water. Reduce heat, cover and simmer 4-5 minutes, turning once, until the pork reaches 145°F (63°C).", "Steam the broccoli 4 minutes. Spoon the glaze over the chops and serve over rice."],
+    ing:[["pork_chops", 2.5], ["teriyaki_sauce", 0.5], ["rice", 1], ["broccoli", 1]]},
+  {n:"Korean-style pork chops with sesame broccoli",type:"Dinner",cuisine:"Asian",note:"Pork chops, soy-brown sugar marinade, rice, broccoli",baseServ:4,method:"skillet",time:"35 min + marinating",tip:"Never reuse marinade that touched raw pork without boiling it first.",pantry:"soy sauce is on your list; brown sugar, vinegar, garlic powder, ginger, oil",batch:CURRENT_BATCH,
+    steps:["Whisk the marinade: {x:1/4 cup} soy sauce, {x:2 tbsp} brown sugar, {x:1 tbsp} vinegar, {x:1 tsp} garlic powder, {x:1/2 tsp} ginger and {x:1/4 tsp} pepper. Add the chops and marinate at least 20 minutes (up to 8 hours).", "Cook the rice as directed.", "Pat the chops dry, saving the marinade. Sear in {x:1 tbsp} oil over medium-high heat 4 minutes per side until deeply browned and 145°F (63°C).", "Boil the leftover marinade 2 minutes in a small pot until syrupy.", "Stir-fry the broccoli in {x:1 tsp} oil 4 minutes with a splash of water, toss with {x:1 tsp} sesame oil or oil. Slice the chops, drizzle with sauce and serve over rice."],
+    ing:[["pork_chops", 2.5], ["soy_sauce", 0.5], ["rice", 1], ["broccoli", 2]]},
+  {n:"Cajun pork chop & potato skillet",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, corn, Cajun spices",baseServ:4,method:"skillet",time:"40 min",tip:"Skip the cayenne for mild heat. The paprika carries the color.",pantry:"paprika, garlic powder, onion powder, oregano, cayenne, salt, pepper, oil",batch:CURRENT_BATCH,
+    steps:["Mix the Cajun seasoning: {x:2 tsp} paprika, {x:1 tsp} garlic powder, {x:1 tsp} onion powder, {x:1/2 tsp} oregano, {x:1/2 tsp} cayenne (optional), {x:1 tsp} salt and {x:1/2 tsp} pepper.", "Cube the potatoes and boil 6 minutes; drain. Rub half the seasoning on the chops.", "Sear the chops in {x:1 tbsp} oil in a large skillet 4 minutes per side; set aside.", "Add the potatoes, diced onion and the rest of the seasoning to the pan. Cook 8 minutes until golden, adding the corn for the last 3 minutes.", "Return the chops, cover 3 minutes until 145°F (63°C) and serve from the skillet."],
+    ing:[["pork_chops", 2.5], ["yellow_potatoes", 1], ["canned_veg", 2], ["onions", 0.33]]},
+  {n:"Italian pork chops with peppers & marinara",type:"Dinner",cuisine:"Italian",note:"Pork chops, marinara, peppers, pasta",baseServ:4,method:"skillet",time:"40 min",tip:"A pinch of sugar in the sauce takes the edge off canned marinara.",pantry:"Italian seasoning, garlic, salt, pepper, oil",batch:CURRENT_BATCH,
+    steps:["Season the chops with {x:1 tsp} Italian seasoning, {x:1 tsp} salt and {x:1/2 tsp} pepper.", "Sear in {x:1 tbsp} oil over medium-high heat 3 minutes per side; set aside.", "Add the sliced peppers and onion to the pan and cook 5 minutes. Stir in {x:2 cloves} garlic or {x:1/2 tsp} garlic powder.", "Add the marinara and {x:1/4 cup} water, return the chops, cover and simmer 10-12 minutes until 145°F (63°C).", "Boil the pasta and serve with the chops and sauce on top."],
+    ing:[["pork_chops", 2.5], ["marinara", 1], ["peppers", 1], ["pasta", 1], ["onions", 0.2]]},
+  {n:"Slow cooker beef birria-style tacos",type:"Dinner",cuisine:"Mexican",note:"Chuck roast, salsa, tortillas, cheese",baseServ:4,method:"slowcooker",time:"20 min + 8 hr",tip:"Skim a little fat from the top before serving the juice, or leave it for dipping.",pantry:"chili powder, cumin, oregano, vinegar, salt, pepper, oil",batch:CURRENT_BATCH,
+    steps:["Cut the chuck roast into 3 or 4 large pieces and season with {x:2 tsp} salt, {x:1 tsp} pepper, {x:1 tbsp} chili powder, {x:2 tsp} cumin and {x:1 tsp} oregano.", "Sear the pieces in {x:1 tbsp} oil in a hot skillet 2 minutes per side (optional but worth it).", "Place in the slow cooker with the sliced onion, the salsa, {x:1/2 cup} water and {x:2 tbsp} vinegar.", "Cover and cook on low 8-9 hours (or high 5-6) until the beef shreds with no resistance. Shred and stir it into the juices.", "Dip tortillas into the fat that floats on the juice, crisp in a skillet with cheese, fold and serve with the juice for dipping."],
+    ing:[["roast_beef", 3], ["salsa", 1], ["onions", 0.5], ["tortillas", 1], ["cheese", 0.75], ["pantrystaples", 1]]},
+  {n:"Slow cooker beef stew",type:"Dinner",cuisine:"American",note:"Chuck roast, potatoes, carrots, onion",baseServ:4,method:"slowcooker",time:"25 min + 8 hr",tip:"Browning the beef first adds depth that a dump-and-go stew can't match.",pantry:"flour, oil, salt, pepper, soy sauce, thyme or Italian seasoning, cornstarch",batch:CURRENT_BATCH,
+    steps:["Cut the chuck roast into 1 1/2-inch cubes. Toss with {x:3 tbsp} flour, {x:1 1/2 tsp} salt and {x:1 tsp} pepper.", "Brown the beef in {x:2 tbsp} oil in batches, 2 minutes per side, then transfer to the slow cooker.", "Add the chopped carrots, cubed potatoes, sliced onion, the canned tomatoes, {x:2 tbsp} soy sauce, {x:1 tsp} thyme or Italian seasoning and {x:2 cups} water.", "Cover and cook on low 8 hours or high 4-5 hours until the beef is fork-tender.", "Stir {x:2 tbsp} cornstarch mixed with cold water in during the last 15 minutes on high to thicken. Taste for salt."],
+    ing:[["roast_beef", 2], ["yellow_potatoes", 1], ["whole_carrots", 0.75], ["onions", 0.5], ["canned_tomatoes", 1]]},
+  {n:"Taco-stuffed sweet potatoes",type:"Dinner",cuisine:"Mexican",note:"Ground beef, sweet potatoes, salsa, cheese",baseServ:4,method:"oven",time:"60 min",tip:"Microwave the potatoes 6 minutes first to shorten the oven time.",pantry:"chili powder, cumin, garlic powder, salt, oil",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C). Prick the sweet potatoes, rub with oil and bake 45-50 minutes until soft.", "Brown the ground beef 6-7 minutes; drain.", "Stir in {x:2 tsp} chili powder, {x:1 tsp} cumin, {x:1/2 tsp} garlic powder, {x:1 tsp} salt and {x:1/4 cup} water. Simmer 4 minutes until saucy.", "Split the potatoes and fluff the insides.", "Top with the taco beef, shredded cheese, salsa and sour cream."],
+    ing:[["ground_beef", 1], ["sweet_potato", 2.5], ["salsa", 0.5], ["cheese", 0.5], ["sourcream", 0.5]]},
+  {n:"Korean-style beef rice bowls",type:"Dinner",cuisine:"Asian",note:"Ground beef, soy-brown sugar sauce, rice, cucumber",baseServ:4,method:"skillet",time:"25 min",tip:"A fried egg on top turns this into a very satisfying dinner.",pantry:"brown sugar, garlic powder, ginger, vinegar, salt",batch:CURRENT_BATCH,
+    steps:["Cook the rice as directed.", "Whisk the sauce: {x:3 tbsp} soy sauce, {x:2 tbsp} brown sugar, {x:1 tsp} garlic powder, {x:1/2 tsp} ginger, {x:1 tsp} vinegar.", "Brown the ground beef in a large skillet over medium-high heat 6-7 minutes, breaking it into small crumbles; drain extra fat.", "Pour the sauce over the beef and simmer 3 minutes until syrupy.", "Slice the cucumber, quick-pickle it in {x:1 tbsp} vinegar with a pinch of salt and sugar for 5 minutes, then serve everything over the rice."],
+    ing:[["ground_beef", 1], ["soy_sauce", 0.5], ["rice", 1], ["cucumber", 1]]},
+  {n:"Baked spaghetti",type:"Dinner",cuisine:"Italian",note:"Ground beef, spaghetti, marinara, cheese",baseServ:4,method:"oven",time:"55 min",tip:"Slightly undercooked pasta absorbs sauce in the oven instead of turning mushy.",pantry:"Italian seasoning, garlic powder, salt, sugar",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 375°F (190°C). Boil the pasta 2 minutes under the package time; drain.", "Brown the ground beef with diced onion; drain. Stir in the marinara, {x:1 tsp} Italian seasoning, {x:1/2 tsp} garlic powder, {x:1/2 tsp} salt and a pinch of sugar; simmer 5 minutes.", "Toss the pasta with the sauce and half the cheese and pour into a greased 9x13 dish.", "Top with the remaining cheese.", "Cover with foil, bake 15 minutes, uncover and bake 10 minutes more until bubbly with browned edges. Rest 5 minutes."],
+    ing:[["ground_beef", 1], ["pasta", 1], ["marinara", 1.5], ["cheese", 1.25], ["onions", 0.2]]},
+  {n:"Buffalo chicken tenderloin wraps",type:"Dinner",cuisine:"American",note:"Chicken tenderloins, hot sauce, lettuce, cucumber",baseServ:4,method:"skillet",time:"25 min",tip:"Start with half the hot sauce. You can always add more heat.",pantry:"butter, oil, garlic powder, paprika, salt, ranch or blue cheese dressing",batch:CURRENT_BATCH,
+    steps:["Slice the tenderloins into strips. Season with {x:1/2 tsp} salt, {x:1/2 tsp} garlic powder and {x:1/2 tsp} paprika.", "Cook in {x:1 tbsp} oil over medium-high heat 6-7 minutes until golden and 165°F (74°C).", "Melt {x:2 tbsp} butter with the hot sauce (about {x:1/4 cup}), toss the chicken in it and cook 1 minute.", "Warm the tortillas. Fill with chicken, shredded lettuce, cucumber sticks and cheese.", "Drizzle with ranch or blue cheese dressing and roll up."],
+    ing:[["chicken_tenderloin", 1.5], ["hot_sauce", 0.25], ["tortillas", 1], ["lettuce", 0.5], ["cucumber", 1], ["cheese", 0.5]]},
+  {n:"Peanut noodle chicken stir-fry",type:"Dinner",cuisine:"Asian",note:"Chicken tenderloins, noodles, broccoli, peanut sauce",baseServ:4,method:"skillet",time:"30 min",tip:"Thin the sauce with hot water a spoonful at a time. Peanut butter thickens as it cools.",pantry:"oil, vinegar, honey, garlic powder",batch:CURRENT_BATCH,
+    steps:["Cook the noodles per the package; drain and toss with a drizzle of oil.", "Whisk the sauce: {x:3 tbsp} peanut butter, {x:3 tbsp} soy sauce, {x:1 tbsp} vinegar, {x:1 tbsp} honey or brown sugar, {x:1/2 tsp} garlic powder and {x:1/4 cup} hot water until smooth.", "Slice the chicken thin and stir-fry in {x:1 tbsp} oil over high heat 4-5 minutes; remove.", "Stir-fry the broccoli with a splash of water 3-4 minutes.", "Return the chicken, add the noodles and sauce and toss 1-2 minutes until coated. Top with sliced cucumber."],
+    ing:[["chicken_tenderloin", 1.5], ["noodles", 1], ["broccoli", 2], ["peanut_butter", 0.4], ["soy_sauce", 0.5]]},
+  {n:"Chicken souvlaki-style plates",type:"Dinner",cuisine:"Mediterranean",note:"Chicken tenderloins, cucumber-tomato salad, pita",baseServ:4,method:"oven",time:"35 min + marinating",tip:"Soak wooden skewers 20 minutes so they don't burn.",pantry:"oil, vinegar, oregano, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+    steps:["Marinate the chicken: {x:3 tbsp} oil, {x:2 tbsp} vinegar or lemon juice, {x:1 tsp} oregano, {x:1 tsp} garlic powder, {x:1 tsp} salt and {x:1/2 tsp} pepper, at least 20 minutes.", "Heat the broiler to high (or a grill pan to medium-high). Thread the chicken on skewers, or lay it on a foil-lined pan.", "Broil 4 inches from the heat, 5 minutes per side, until browned and 165°F (74°C).", "Toss diced cucumber, tomato, a few olives and the feta with {x:1 tbsp} oil, {x:1 tsp} vinegar and a pinch of oregano.", "Warm the pita and serve the chicken with the salad and a spoon of yogurt or hummus."],
+    ing:[["chicken_tenderloin", 1.5], ["pita_bread", 1], ["cucumber", 1], ["tomato", 1], ["feta_cheese", 0.5], ["olives", 0.5]]},
+  {n:"One-pot arroz con pollo",type:"Dinner",cuisine:"Mexican",note:"Chicken tenderloins, rice, peppers, tomatoes",baseServ:4,method:"skillet",time:"45 min",tip:"Toasting the dry rice for a minute keeps the grains separate.",pantry:"oil, cumin, paprika, garlic powder, salt",batch:CURRENT_BATCH,
+    steps:["Cut the chicken into chunks and season with {x:1 tsp} salt, {x:1 tsp} cumin, {x:1 tsp} paprika and {x:1/2 tsp} garlic powder.", "Brown in {x:1 tbsp} oil in a deep skillet or Dutch oven 4 minutes; remove.", "Cook the diced onion and pepper 4 minutes, then stir in the rice and toast 1 minute.", "Add the canned tomatoes and {x:2 cups} water. Return the chicken and bring to a boil.", "Cover and simmer on very low 18-20 minutes without lifting the lid. Rest 5 minutes covered, then fluff."],
+    ing:[["chicken_tenderloin", 1.5], ["rice", 1], ["peppers", 1], ["canned_tomatoes", 1], ["onions", 0.33], ["pantrystaples", 1]]},
+  {n:"Garlic parmesan wings with roasted broccoli",type:"Dinner",cuisine:"American",note:"Chicken wings, parmesan, garlic, broccoli",baseServ:4,method:"oven",time:"60 min",tip:"Sprinkle the parmesan on while the wings are hot so it clings.",pantry:"oil, baking powder, salt, pepper, garlic powder, Italian seasoning, butter",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C). Set a greased rack on a foil-lined sheet pan.", "Pat the wings very dry. Toss with {x:1 tbsp} oil, {x:1 tsp} baking powder (optional), {x:1 tsp} salt and {x:1/2 tsp} pepper.", "Roast 40-45 minutes, flipping once, until deep golden and crisp.", "Melt {x:3 tbsp} butter with {x:1 1/2 tsp} garlic powder and {x:1 tsp} Italian seasoning. Toss in the hot wings, then sprinkle with the parmesan.", "Roast the broccoli on a second pan with oil and salt for the last 15 minutes."],
+    ing:[["chicken_wings", 3], ["parmesan", 0.5], ["broccoli", 2], ["butter", 0.25]]},
+  {n:"Soy-ginger wings with rice & cucumber salad",type:"Dinner",cuisine:"Asian",note:"Chicken wings, soy sauce, rice, cucumber",baseServ:4,method:"oven",time:"65 min",tip:"The cornstarch gives the glaze a lacquered finish.",pantry:"oil, honey, ginger, garlic powder, cornstarch, vinegar, salt, pepper",batch:CURRENT_BATCH,
+    steps:["Heat the oven to 425°F (220°C). Pat the wings dry and toss with {x:1 tbsp} oil, {x:1 tsp} salt and {x:1/2 tsp} pepper. Roast on a rack 40-45 minutes, flipping once.", "Simmer the glaze: {x:1/4 cup} soy sauce, {x:3 tbsp} honey or brown sugar, {x:1 tsp} ginger, {x:1/2 tsp} garlic powder and {x:2 tsp} cornstarch in {x:1/4 cup} water for 3 minutes until thick.", "Toss the hot wings in the glaze and broil 2 minutes until sticky.", "Cook the rice as directed.", "Slice the cucumber and toss with {x:1 tbsp} vinegar, {x:1 tsp} soy sauce, a pinch of sugar and salt; chill while the wings cook."],
+    ing:[["chicken_wings", 3], ["soy_sauce", 0.5], ["rice", 1], ["cucumber", 2]]},
+  {n:"Bacon broccoli cheddar pasta",type:"Dinner",cuisine:"American",note:"Bacon, broccoli, pasta, cheese",baseServ:4,method:"boil",time:"30 min",tip:"Take the pan off the heat before adding cheese so it melts smooth instead of clumping.",pantry:"butter, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+    steps:["Cook the bacon in a large skillet over medium heat until crisp, 8-10 minutes. Crumble and pour off all but {x:2 tbsp} fat.", "Boil the pasta in salted water, adding the broccoli florets for the last 3 minutes. Reserve 1 cup pasta water; drain.", "Add {x:2 tbsp} butter and {x:1/2 tsp} garlic powder to the skillet over low heat. Add the pasta and broccoli.", "Stir in the cheese and {x:1/4 cup} pasta water until creamy; add more water as needed.", "Fold in most of the bacon and season with salt and pepper. Top with the rest."],
+    ing:[["bacon", 1], ["broccoli", 2], ["pasta", 1], ["cheese", 1.25], ["butter", 0.25]]},
+  {n:"Cajun sausage & rice skillet",type:"Dinner",cuisine:"American",note:"Smoked sausage, rice, peppers, tomatoes",baseServ:4,method:"skillet",time:"40 min",tip:"Add a can of drained beans for extra protein and to stretch the pan.",pantry:"paprika, garlic powder, oregano, cayenne, salt",batch:CURRENT_BATCH,
+    steps:["Slice the sausage into coins and brown in a large skillet over medium-high heat 5 minutes; remove.", "Cook the diced onion and peppers in the drippings 5 minutes. Stir in {x:2 tsp} paprika, {x:1 tsp} garlic powder, {x:1 tsp} oregano, {x:1/2 tsp} cayenne (optional), {x:1 tsp} salt and the rice; toast 1 minute.", "Add the canned tomatoes and {x:2 cups} water. Return the sausage and bring to a boil.", "Cover and simmer on low 18-20 minutes until the rice is tender.", "Fluff with a fork and serve."],
+    ing:[["sausage", 1], ["rice", 1], ["peppers", 1], ["canned_tomatoes", 1], ["onions", 0.33], ["pantrystaples", 1]]},
+  {n:"Cheesy potato & broccoli soup",type:"Dinner",cuisine:"American",note:"Potatoes, broccoli, cheese, milk",baseServ:4,method:"skillet",time:"40 min",tip:"Mashing a few potatoes makes it creamy without adding cream.",pantry:"butter, flour, salt, pepper, garlic powder",batch:CURRENT_BATCH,
+    steps:["Peel (or scrub) the potatoes and cut into 1/2-inch cubes. Dice the onion.", "Melt {x:2 tbsp} butter in a large pot, cook the onion 4 minutes, stir in {x:2 tbsp} flour and cook 1 minute.", "Add {x:3 cups} water, the potatoes, {x:1 tsp} salt, {x:1/2 tsp} pepper and {x:1/2 tsp} garlic powder. Simmer 12 minutes until the potatoes are tender.", "Add the chopped broccoli and cook 5 minutes. Mash some of the potatoes against the side of the pot to thicken.", "Stir in the milk and cheese over low heat until melted. Do not boil."],
+    ing:[["yellow_potatoes", 1], ["broccoli", 1], ["cheese", 1.5], ["milk", 0.5], ["onions", 0.33]]},
+  {n:"Vegetarian chili mac",type:"Dinner",cuisine:"American",note:"Pasta, beans, tomatoes, corn, cheese",baseServ:4,method:"skillet",time:"35 min",tip:"The pasta cooks right in the sauce, so only one pan to wash.",pantry:"oil, chili powder, cumin, paprika, salt",batch:CURRENT_BATCH,
+    steps:["Dice the onion and sauté in {x:1 tbsp} oil in a deep skillet 4 minutes.", "Stir in {x:1 tbsp} chili powder, {x:2 tsp} cumin, {x:1 tsp} paprika and {x:1 tsp} salt for 30 seconds.", "Add the canned tomatoes, drained beans, corn, pasta and {x:2 cups} water. Bring to a boil.", "Cover and simmer 12-14 minutes, stirring, until the pasta is tender and the sauce is thick.", "Stir in the cheese and serve with sour cream."],
+    ing:[["pasta", 1], ["canned_beans", 2], ["canned_tomatoes", 2], ["canned_veg", 1], ["cheese", 0.75], ["onions", 0.33], ["pantrystaples", 1]]},
+  {n:"Chickpea & potato curry with rice",type:"Dinner",cuisine:"Indian",note:"Chickpeas, potatoes, tomatoes, curry spices",baseServ:4,method:"skillet",time:"40 min",tip:"Bloom the spices in the hot oil first. It makes them taste far deeper.",pantry:"oil, garlic, ginger, curry powder, turmeric, salt",batch:CURRENT_BATCH,
+    steps:["Cook the rice as directed. Cube the potatoes into 1/2-inch pieces.", "Heat {x:2 tbsp} oil in a deep skillet. Cook the diced onion 5 minutes, then add {x:3 cloves} garlic (or {x:1 tsp} garlic powder) and {x:1 tsp} ginger; cook 30 seconds.", "Stir in {x:2 tsp} curry powder (or {x:1 tsp} cumin + {x:1 tsp} paprika), {x:1/2 tsp} turmeric if you have it, and {x:1 tsp} salt for 30 seconds.", "Add the potatoes, the canned tomatoes and {x:1 cup} water. Simmer covered 12 minutes, then add the drained chickpeas and cook 8-10 minutes until the potatoes are tender.", "Mash a few chickpeas to thicken, check the salt and serve over rice with a spoon of yogurt."],
+    ing:[["chickpeas", 2], ["yellow_potatoes", 1], ["canned_tomatoes", 2], ["rice", 1], ["onions", 0.33], ["yogurt", 1]]},
+  {n:"Chicken tikka-style tenderloins with cucumber raita",type:"Dinner",cuisine:"Indian",note:"Chicken tenderloins, yogurt marinade, rice, cucumber",baseServ:4,method:"oven",time:"40 min + marinating",tip:"Yogurt tenderizes the chicken. Even 30 minutes in the marinade makes a difference.",pantry:"oil, paprika, cumin, garlic powder, ginger, cayenne, salt",batch:CURRENT_BATCH,
+    steps:["Mix the marinade: {x:1/2 cup} yogurt (about 2 cups), {x:1 tbsp} oil, {x:2 tsp} paprika, {x:1 tsp} cumin, {x:1 tsp} garlic powder, {x:1/2 tsp} ginger, {x:1 tsp} salt and a pinch of cayenne. Coat the chicken and marinate 30 minutes to overnight.", "Cook the rice as directed.", "Heat the oven to 450°F (230°C). Arrange the chicken on a foil-lined, greased sheet pan, shaking off excess marinade.", "Roast 12-14 minutes until browned at the edges and 165°F (74°C); broil 1-2 minutes for char.", "For the raita: stir the grated cucumber into the remaining yogurt with a pinch of salt and cumin. Serve the chicken over rice with the raita."],
+    ing:[["chicken_tenderloin", 1.5], ["yogurt", 3], ["rice", 1], ["cucumber", 1]]},
 ];
 
 const snacks = [
@@ -1296,7 +1405,7 @@ function applyFoodPreferences(text){
     if(!recognized && !/^(please|thanks|thank you|ok|okay|i|we)$/.test(clause)) unrecognized.push(clause);
     if(negated) return; // negative clauses only add exclusions, never positive filters
 
-    const cuisines = ["Mexican","American","Italian","Mediterranean","Asian"];
+    const cuisines = ["Mexican","American","Italian","Mediterranean","Asian","Indian"];
     const c = cuisines.find(x=> clause.includes(x.toLowerCase()));
     if(c){ activeMealType="Dinner"; activeCuisine=c; applied.push(`showing ${c} dinners`); }
 
@@ -1419,7 +1528,7 @@ function mealRow(item, i){
   row.className = 'item' + (on ? ' selected' : '');
   const top = document.createElement('div');
   top.className = 'item-top';
-  const priceLabel = on ? fmt(mealPrice(item, state.servings)) : '~' + fmt(mealBaseCost(item));
+  const priceLabel = on ? fmt(mealPrice(effMeal(item, state.sub), state.servings)) : '~' + fmt(mealBaseCost(item));
   top.innerHTML = `
     ${thumb(item)}
     <div style="flex:1;">
@@ -1437,7 +1546,7 @@ function mealRow(item, i){
   });
   top.querySelector('.info-btn').addEventListener('click', (e)=>{
     e.stopPropagation();
-    openInfoModal(item, on ? state.servings : defaultServings());
+    openInfoModal(item, on ? state.servings : defaultServings(), on ? state.sub : null);
   });
   row.appendChild(top);
   if(on){
@@ -1448,13 +1557,18 @@ function mealRow(item, i){
       <button data-role="minus" type="button" aria-label="Fewer servings">−</button>
       <span class="srv-val">${state.servings}</span>
       <button data-role="plus" type="button" aria-label="More servings">+</button>
-      <span class="srv" style="margin-left:auto;">${fmt(mealPrice(item, state.servings)/state.servings)}/serving</span>
+      <span class="srv" style="margin-left:auto;">${fmt(mealPrice(effMeal(item, state.sub), state.servings)/state.servings)}/serving</span>
+      ${on && protOptions(item).length ? `<div style="flex-basis:100%;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;"><span class="srv">Protein:</span>${protChipsHtml(item, state.sub)}</div>` : ''}
       <div style="flex-basis:100%;display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
         <button type="button" class="mini-btn go" data-role="cook">👩‍🍳 Cook</button>
         ${(cheaperAlternatives(i,1).length && (computeTotal() > budget || mealBaseCost(item)/item.baseServ >= 4.5)) ? '<button type="button" class="mini-btn" data-role="cheap">💡 Cheaper swap</button>' : ''}
       </div>
     `;
-    controls.querySelector('[data-role=cook]').addEventListener('click', ()=> openCook(item, state.servings));
+    controls.querySelector('[data-role=cook]').addEventListener('click', ()=> openCook(effMeal(item, state.sub), state.servings));
+    controls.querySelectorAll('[data-prot]').forEach(b=> b.addEventListener('click', ()=>{
+      if(state.sub === b.dataset.prot) delete state.sub; else state.sub = b.dataset.prot;
+      render();
+    }));
     const _ch = controls.querySelector('[data-role=cheap]'); if(_ch) _ch.addEventListener('click', ()=> openInfoModal(item, state.servings));
     controls.querySelector('[data-role=minus]').addEventListener('click', ()=>{ state.servings = Math.max(1, state.servings-1); render(); });
     controls.querySelector('[data-role=plus]').addEventListener('click', ()=>{ state.servings += 1; render(); });
@@ -1535,7 +1649,7 @@ function ingListExcluded(ing, restrictions){
   });
 }
 
-const cuisineIcon = {Mexican:"🌮", American:"🍔", Italian:"🍝", Mediterranean:"🥙", Asian:"🍜", Breakfast:"🍳", Lunch:"🥪"};
+const cuisineIcon = {Mexican:"🌮", American:"🍔", Italian:"🍝", Mediterranean:"🥙", Asian:"🍜", Indian:"🍛", Breakfast:"🍳", Lunch:"🥪"};
 
 function wasRecentlyMade(name){
   // "recent" = appears in the last 2 saved weeks of history
@@ -1766,7 +1880,7 @@ function computeStapleTotal(){
 
 function computeTotal(){
   let t = 0;
-  selMeals.forEach((s,i)=>{ t += mealPrice(meals[i], s.servings); });
+  selMeals.forEach((s,i)=>{ t += mealPrice(effMeal(meals[i], s.sub), s.servings); });
   selSnacks.forEach(i=>{ t += snackPrice(snacks[i]); });
   t += computeStockTotal();
   t += computeStapleTotal();
@@ -1774,7 +1888,43 @@ function computeTotal(){
   return t;
 }
 
+function pixMsg(t){ const el = document.getElementById('pixMsg'); if(el) el.textContent = t; }
+function loadPhotosNow(){
+  if(!localStorage.getItem(PIXA_KEY)) return;
+  const list = meals.filter(m=> isNewItem(m) && !m.photo);
+  refreshPhotos(list, (loaded, fails)=>{
+    pixMsg(fails ? `Could not load photos (${fails} errors). Check the key and try again later.` : `Photos ready${loaded ? ' (' + loaded + ' new)' : ''}.`);
+    try{ render(); renderRecipeCards(); }catch(e){}
+  });
+}
+document.getElementById('pixSaveBtn').addEventListener('click', ()=>{
+  const v = document.getElementById('pixKeyInput').value.trim();
+  if(!v){ pixMsg(localStorage.getItem(PIXA_KEY) ? 'Key is saved. Loading photos…' : 'Paste your key first.'); if(localStorage.getItem(PIXA_KEY)) loadPhotosNow(); return; }
+  try{ localStorage.setItem(PIXA_KEY, v); }catch(e){}
+  document.getElementById('pixKeyInput').value = '';
+  pixMsg('Key saved on this device. Loading photos…');
+  loadPhotosNow();
+});
+if(localStorage.getItem(PIXA_KEY)){ pixMsg('Key saved on this device. Photos load automatically.'); setTimeout(loadPhotosNow, 1500); }
+
+function updateStartGuide(){
+  const need = Object.values(mealCounts).reduce((a,b)=>a+b,0);
+  const got = selMeals.size;
+  const people = adults.v + ' adult' + (adults.v===1?'':'s') + (kids.v ? ', ' + kids.v + ' kid' + (kids.v===1?'':'s') : '');
+  const s1 = document.getElementById('stepStatus1'); if(s1) s1.textContent = people + ' · $' + budget + ' budget';
+  const s2 = document.getElementById('stepStatus2'); if(s2) s2.textContent = got>=need ? '✓ ' + got + ' meals picked' : got + ' of ' + need + ' picked so far';
+  const built = document.getElementById('groceryList') && document.getElementById('groceryList').style.display === 'block';
+  const s3 = document.getElementById('stepStatus3'); if(s3) s3.textContent = built ? '✓ List is ready on the Shopping tab' : (got>0 ? 'Ready when you are' : 'Pick meals first');
+  const r2 = document.getElementById('stepRow2'), r3 = document.getElementById('stepRow3');
+  if(r2) r2.classList.toggle('done', got>=need && got>0);
+  if(r3){ r3.classList.toggle('locked', got===0); r3.classList.toggle('done', built); }
+}
+document.getElementById('stepGo1').addEventListener('click', ()=>{ showTab('plan'); const h=document.querySelector('.household'); if(h) h.scrollIntoView({behavior:'smooth', block:'start'}); });
+document.getElementById('stepGo2').addEventListener('click', ()=> showTab('meals'));
+document.getElementById('stepGo3').addEventListener('click', ()=>{ if(selMeals.size>0){ document.getElementById('confirmBtn').click(); } else { showTab('meals'); flash('Pick at least one meal first.'); } });
+
 function render(){
+  try{ updateStartGuide(); }catch(e){}
   try{ saveWeek(); }catch(e){}
   currentRestrictions = dietRestrictions(appliedDietText);
   const activeRestr = Object.entries(currentRestrictions).filter(([k,v])=>v===true).map(([k])=>k);
@@ -1993,6 +2143,55 @@ document.getElementById('submitDietBtn').addEventListener('click', ()=>{
   else flash('Diet and food requests applied.');
 });
 
+/* ---- Protein swaps: checkboxes for Chicken / Turkey / Beans per selected meal ---- */
+const PROTEIN_GROUPS = [["chicken_tenderloin","chicken_breast","chicken_thighs","pork_chops","ground_beef","ground_turkey","sirloin_steak","flank_steak"]];
+const PROT_OPTS = [{id:"chicken",label:"Chicken"},{id:"turkey",label:"Turkey"},{id:"beans",label:"Beans"},{id:"shrimp",label:"Shrimp"},{id:"salmon",label:"Salmon"}];
+const PROTEIN_LABEL = {chicken_tenderloin:"chicken tenderloins", chicken_breast:"chicken breast", chicken_thighs:"chicken thighs", pork_chops:"pork chops", ground_beef:"ground beef", ground_turkey:"ground turkey", sirloin_steak:"sirloin steak", flank_steak:"flank steak", canned_beans:"black beans", shrimp:"shrimp", salmon:"salmon fillet"};
+const PROTEIN_RE = {chicken_tenderloin:/chicken tenderloins?|tenderloins?/gi, chicken_breast:/chicken breasts?|breasts?/gi, chicken_thighs:/(?:boneless )?chicken thighs?|thighs?/gi, pork_chops:/(?:bone-in |boneless )?(?:pork )?(?:loin )?chops?/gi, ground_beef:/ground beef/gi, ground_turkey:/ground turkey|ground beef/gi, sirloin_steak:/(?:angus )?(?:top )?sirloin(?: steak)?/gi, flank_steak:/flank steak/gi};
+const PROTEIN_TEMP = {pork_chops:"145°F (63°C)", ground_beef:"160°F (71°C)", ground_turkey:"165°F (74°C)", sirloin_steak:"145°F (63°C)", flank_steak:"145°F (63°C)", salmon:"145°F (63°C), or until it flakes easily", shrimp:"pink and opaque all the way through"};
+function protName(k){ return PROTEIN_LABEL[k] || (catalog[k] ? catalog[k].name.toLowerCase() : k); }
+function protOf(meal){
+  for(const g of PROTEIN_GROUPS){
+    const hits = meal.ing.filter(([k])=> g.includes(k));
+    if(hits.length) return hits.length===1 ? {key:hits[0][0]} : null;
+  }
+  return null;
+}
+function protKeyFor(origKey, id){
+  if(id==='chicken') return /^chicken_/.test(origKey) ? origKey : 'chicken_tenderloin';
+  if(id==='turkey') return 'ground_turkey';
+  if(id==='beans') return 'canned_beans';
+  if(id==='shrimp') return 'shrimp';
+  if(id==='salmon') return 'salmon';
+  return origKey;
+}
+function protOptions(meal){
+  const p = protOf(meal); if(!p) return [];
+  return PROT_OPTS.map(o=> ({...o, key: protKeyFor(p.key, o.id)})).filter(o=> o.key !== p.key && catalog[o.key]);
+}
+function protChipsHtml(meal, cur){
+  const opts = protOptions(meal); if(!opts.length) return '';
+  return opts.map(o=>{ const on = cur===o.id; const per = mealBaseCost(effMeal(meal, o.id))/(meal.baseServ||4);
+    return `<button type="button" class="mini-btn${on?' go':''}" data-prot="${o.id}" aria-pressed="${on}" style="line-height:1.25;">${on?'☑':'☐'} ${o.label}<br><span style="font-size:11px;opacity:.8;">${fmt(per)}/serving</span></button>`; }).join(' ');
+}
+function effMeal(meal, id){
+  if(!id) return meal;
+  const p = protOf(meal); if(!p) return meal;
+  const opt = protOptions(meal).find(o=> o.id===id); if(!opt) return meal;
+  const isBeans = opt.key === 'canned_beans';
+  const label = protName(opt.key), old = protName(p.key);
+  const re = PROTEIN_RE[p.key];
+  const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+  const note = isBeans
+    ? `Beans are already cooked: rinse and drain them, add them where the protein goes, and heat through about 5 minutes. Skip any cook-until-done instruction.`
+    : (opt.key==='shrimp' || opt.key==='salmon')
+      ? `Cook the ${label} until it is ${PROTEIN_TEMP[opt.key]}. This version uses ${label} instead of ${old}; seafood cooks faster than meat, so watch it closely.`
+      : `Cook the ${label} until the thickest part reaches ${PROTEIN_TEMP[opt.key]||'165°F (74°C)'}. This version uses ${label} instead of ${old}, so check it with a thermometer.`;
+  const steps = meal.steps ? meal.steps.map(s=> re ? s.replace(re, m => (m.charAt(0)!==m.charAt(0).toLowerCase()) ? cap(label) : label) : s).concat([note]) : undefined;
+  return {...meal, sub:id, ing: meal.ing.map(([k,q])=> k===p.key ? [opt.key, isBeans ? Math.round(q*1.33*100)/100 : q] : [k,q]), steps, subNote: `Made with ${label} instead of ${old}`};
+}
+
+
 function ingredientNames(meal, servings){
   const factor = servings / meal.baseServ;
   return meal.ing.map(([key,qty])=>{
@@ -2003,7 +2202,51 @@ function ingredientNames(meal, servings){
   }).filter(Boolean);
 }
 
+
+function fmtFrac(v){
+  const w=Math.floor(v+1e-9); let f=Math.round((v-w)*8)/8;
+  let whole=w; if(f>=1){whole+=1;f=0;}
+  const map={0.125:'⅛',0.25:'¼',0.375:'⅜',0.5:'½',0.625:'⅝',0.75:'¾',0.875:'⅞'};
+  if(f===0) return String(whole);
+  return (whole?whole+' ':'')+(map[f]||f);
+}
+function parseQty(s){
+  const m=s.trim().split(/\s+/); let t=0;
+  m.forEach(p=>{ if(p.includes('/')){const [a,b]=p.split('/'); t+=a/b;} else t+=parseFloat(p); });
+  return t;
+}
+function scaleToken(body, factor){
+  const mm=body.match(/^(.*?)\s*(tsp|tbsp|cups?|cloves?)$/);
+  if(!mm) return body;
+  let v=parseQty(mm[1])*factor, u=mm[2].replace(/s$/,'');
+  if(u==='tsp' && v>=3){ v=v/3; u='tbsp'; }
+  if(u==='tbsp' && v>=4){ v=v/16; u='cup'; }
+  if(u==='tsp' && v<0.0625) return 'a pinch of';
+  const num=fmtFrac(v);
+  const plural = (u==='cup'||u==='clove') && v>1.0001;
+  const unit = u==='clove' ? (plural?'cloves':'clove') : (u==='cup' ? (plural?'cups':'cup') : u);
+  return num+' '+unit;
+}
+function resolveTokens(str, factor){
+  return String(str).replace(/\{x:([^}]*)\}/g,(_,b)=>scaleToken(b,factor))
+    .replace(/\{q:([^}]*)\}/g,(_,k)=>{ const it=catalog[k.trim()]; return it?it.name:k; });
+}
 function generateSteps(meal, servings){
+  const f = servings / (meal.baseServ||4);
+  return generateStepsRaw(meal, servings).map(s=>resolveTokens(s, f));
+}
+function mealMetaHtml(meal){
+  const bits=[];
+  if(meal.time) bits.push('⏱ '+meal.time);
+  if(meal.pantry) bits.push('Pantry: '+meal.pantry);
+  let out = bits.length ? `<div style="font-size:12px;color:var(--ink-soft);margin:-6px 0 10px;">${bits.join(' · ')}</div>` : '';
+  return out;
+}
+function mealTipHtml(meal){
+  return meal.tip ? `<div style="margin-top:10px;padding:8px 10px;background:#fff6e0;border-radius:8px;font-size:12.5px;">💡 <b>Tip:</b> ${meal.tip}</div>` : '';
+}
+
+function generateStepsRaw(meal, servings){
   if(meal.steps && meal.steps.length) return meal.steps;
   const names = ingredientNames(meal, servings);
   const proteinIng = meal.ing.find(([k])=> ["chicken_breast","chicken_tenderloin","ground_beef","ground_turkey","pork_chops","pork_shoulder","spareribs","sirloin_steak","flank_steak","sausage","breakfast_sausage","bacon","tuna","shrimp","salmon","eggs","turkey_deli","ham_deli"].includes(k));
@@ -2163,17 +2406,30 @@ function sidesHtml(meal){
     <ul style="margin:0; padding-left:18px; font-size:13px; color:var(--ink-soft);">${list.map(x=>`<li>${x}</li>`).join('')}</ul>`;
 }
 
-function openInfoModal(meal, servings){
+function c_info_chips(){
+  document.querySelectorAll('#infoContent [data-prot]').forEach(b=> b.addEventListener('click', ()=>{
+    const origMeal = window.__infoOrig, servings = window.__infoServ;
+    const newSub = (window.__infoSub === b.dataset.prot) ? null : b.dataset.prot;
+    const idx = meals.findIndex(m=> m.n===origMeal.n);
+    if(selMeals.has(idx)){ const st = selMeals.get(idx); if(newSub) st.sub = newSub; else delete st.sub; render(); }
+    openInfoModal(origMeal, servings, newSub);
+  }));
+}
+function openInfoModal(origMeal, servings, sub){
+  window.__infoOrig = origMeal; window.__infoServ = servings; window.__infoSub = sub || null;
+  const meal = effMeal(origMeal, sub);
   const steps = generateSteps(meal, servings);
   const ingList = ingredientNames(meal, servings);
   const content = document.getElementById('infoContent');
   content.innerHTML = `
-    ${meal.photo
-      ? `<img src="${meal.photo}" alt="${meal.n}" loading="lazy" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-bottom:10px;" onerror="this.outerHTML='<div style=&quot;text-align:center;font-size:64px;margin-bottom:6px;&quot;>${cuisineIcon[meal.cuisine] || '🍽️'}</div>'">`
+    ${photoFor(meal)
+      ? `<img src="${photoFor(meal)}" alt="${meal.n}" loading="lazy" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-bottom:10px;" onerror="this.outerHTML='<div style=&quot;text-align:center;font-size:64px;margin-bottom:6px;&quot;>${cuisineIcon[meal.cuisine] || '🍽️'}</div>'">`
       : `<div style="margin-bottom:12px;">${thumb(meal,'big')}</div>`}
     <div style="font-family:Georgia,serif; font-size:20px; font-weight:700; margin-bottom:4px;">${meal.n}</div>
     <div style="font-size:12px; color:var(--paprika); margin-bottom:14px;">${meal.type} · ${meal.cuisine}${meal.quick ? ' · ⚡ Quick (~15 min)' : ''}</div>
     ${(()=>{ const r = latestRating(meal.n); if(!r) return ''; const note = r.note ? ' — “'+r.note.replace(/[<>&]/g,'')+'”' : ''; return `<div style="font-size:12px; margin:-8px 0 12px;">${r.stars ? '⭐ '.repeat(1)+r.stars+'/5' : ''}${note}</div>`; })()}
+    ${mealMetaHtml(meal)}
+    ${protOptions(origMeal).length ? `<div style="font-size:13px; margin:-4px 0 12px;"><div style="margin-bottom:6px;">Protein (tick one to swap):</div><div style="display:flex;gap:6px;flex-wrap:wrap;">${protChipsHtml(origMeal, sub)}</div>${meal.subNote ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:6px;">${meal.subNote}</div>` : ''}</div>` : ''}
     <div style="font-size:13px; font-weight:600; margin-bottom:4px;">Ingredients (serves ${servings})</div>
     <ul style="margin:0 0 14px; padding-left:18px; font-size:13px; color:var(--ink-soft);">
       ${ingList.map(n=>`<li>${n}</li>`).join('')}
@@ -2182,10 +2438,12 @@ function openInfoModal(meal, servings){
     <ol style="margin:0; padding-left:18px; font-size:13px;">
       ${steps.map(st=>`<li style="margin-bottom:4px;">${st}</li>`).join('')}
     </ol>
+    ${mealTipHtml(meal)}
     ${sidesHtml(meal)}
     ${swapsHtml(meal)}
     <button type="button" id="infoCookBtn" class="mini-btn go" style="width:100%;padding:12px;margin-top:16px;font-size:15px;">👩‍🍳 Start cooking, step by step</button>
   `;
+  c_info_chips();
   wireInfoExtras(meal, servings);
   document.getElementById('infoOverlay').style.display = 'flex';
 }
@@ -2196,13 +2454,13 @@ function renderRecipeCards(){
   const root = document.getElementById('recipeRoot');
   root.innerHTML = '';
   selMeals.forEach((s,i)=>{
-    const meal = meals[i];
+    const meal = effMeal(meals[i], s.sub);
     const card = document.createElement('div');
     card.style.cssText = 'border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--white);';
     const steps = generateSteps(meal, s.servings);
     const ingList = ingredientNames(meal, s.servings);
     card.innerHTML = `
-      ${meal.photo ? `<img src="${meal.photo}" alt="${meal.n}" loading="lazy" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
+      ${photoFor(meal) ? `<img src="${photoFor(meal)}" alt="${meal.n}" loading="lazy" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
         <span style="font-size:28px;">${cuisineIcon[meal.cuisine] || '🍽️'}</span>
         <div>
@@ -2210,6 +2468,7 @@ function renderRecipeCards(){
           <div style="font-size:12px; color:var(--ink-soft);">${meal.type} · ${meal.cuisine} · serves ${s.servings}${meal.quick ? ' · ⚡ Quick' : ''}</div>
         </div>
       </div>
+      ${mealMetaHtml(meal)}
       <div style="font-size:13px; font-weight:600; margin:10px 0 4px;">Ingredients</div>
       <ul style="margin:0 0 10px; padding-left:18px; font-size:13px; color:var(--ink-soft);">
         ${ingList.map(n=>`<li>${n}</li>`).join('')}
@@ -2218,6 +2477,7 @@ function renderRecipeCards(){
       <ol style="margin:0; padding-left:18px; font-size:13px;">
         ${steps.map(st=>`<li style="margin-bottom:4px;">${st}</li>`).join('')}
       </ol>
+      ${mealTipHtml(meal)}
       ${sidesHtml(meal)}
       <button type="button" class="mini-btn go cook-card-btn" style="margin-top:12px;padding:10px 14px;font-size:14px;">👩‍🍳 Cook this</button>
     `;
@@ -2226,6 +2486,65 @@ function renderRecipeCards(){
   });
   document.getElementById('recipeCards').style.display = selMeals.size ? 'block' : 'none';
 }
+
+/* ---- Download all recipe cards as one printable file ---- */
+function escHtml(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function buildCardsHtml(){
+  const picks = [...selMeals.entries()].sort((a,b)=> a[0]-b[0]);
+  const today = new Date().toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});
+  const cards = picks.map(([i,s])=>{
+    const orig = meals[i], m = effMeal(orig, s.sub);
+    const steps = generateSteps(m, s.servings);
+    const ings = ingredientNames(m, s.servings);
+    const emo = foodEmoji(m.n, cuisineIcon[m.cuisine] || '🍽️');
+    const g = TILE_GRAD[m.type==='Breakfast' ? 'Breakfast' : (TILE_GRAD[m.cuisine] ? m.cuisine : 'Lunch')] || TILE_GRAD.Lunch;
+    const photo = photoFor(m)
+      ? `<img class="photo" src="${escHtml(photoFor(m))}" alt="${escHtml(m.n)}" onerror="this.outerHTML='<div class=&quot;ph&quot; style=&quot;background:linear-gradient(135deg,${g[0]},${g[1]})&quot;><span>${emo}</span></div>'">`
+      : `<div class="ph" style="background:linear-gradient(135deg,${g[0]},${g[1]})"><span>${emo}</span></div>`;
+    const meta = [m.type, m.cuisine, m.time ? '⏱ ' + m.time : '', 'Serves ' + s.servings, m.subNote ? '🔄 ' + m.subNote : ''].filter(Boolean).map(escHtml).join(' · ');
+    return `<article class="card">
+      ${photo}
+      <h2>${escHtml(m.n)}</h2>
+      <div class="meta">${meta}</div>
+      <h3>Ingredients</h3>
+      <ul>${ings.map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul>
+      ${m.pantry ? `<div class="pantry"><b>Pantry basics:</b> ${escHtml(m.pantry)}</div>` : ''}
+      <h3>Directions</h3>
+      <ol>${steps.map(x=>`<li>${escHtml(String(x).replace(/<[^>]+>/g,''))}</li>`).join('')}</ol>
+      ${m.tip ? `<div class="tip">💡 ${escHtml(m.tip)}</div>` : ''}
+    </article>`;
+  }).join('\n');
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recipe cards · ${escHtml(today)}</title>
+<style>
+  body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:#2B2118;background:#FAF6EC;margin:0;padding:20px;line-height:1.45;}
+  header{max-width:720px;margin:0 auto 18px;} header h1{font-family:Georgia,serif;font-size:28px;margin:0 0 4px;color:#3F6248;}
+  header p{margin:0;color:#5C5245;font-size:14px;}
+  .card{max-width:720px;margin:0 auto 22px;background:#fff;border:1px solid #DCD3BF;border-radius:14px;padding:18px;break-inside:avoid;page-break-inside:avoid;}
+  .card h2{font-family:Georgia,serif;font-size:22px;margin:12px 0 4px;} .card h3{font-size:15px;margin:14px 0 4px;color:#3F6248;}
+  .meta{font-size:13px;color:#5C5245;} .card ul,.card ol{margin:0;padding-left:20px;font-size:14px;} .card li{margin-bottom:5px;}
+  .photo{width:100%;max-height:260px;object-fit:cover;border-radius:10px;}
+  .ph{height:170px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:60px;}
+  .pantry{margin-top:10px;font-size:13px;color:#5C5245;} .tip{margin-top:12px;background:#FFF6E0;border-radius:8px;padding:9px 11px;font-size:13px;}
+  .tools{max-width:720px;margin:0 auto 18px;font-size:13px;color:#5C5245;}
+  @media print{ body{background:#fff;padding:0;} .tools{display:none;} .card{border:none;margin:0 auto;} }
+</style></head><body>
+<header><h1>Your recipe cards</h1><p>${escHtml(today)} · ${picks.length} meal${picks.length===1?'':'s'}. Ingredient amounts match the servings you picked.</p></header>
+<div class="tools">To print or save as PDF: open this file in Chrome or Safari, then choose Print (on iPhone: Share &gt; Print &gt; pinch the page to save as PDF).</div>
+${cards || '<p>No meals picked yet.</p>'}
+</body></html>`;
+}
+document.getElementById('downloadCardsBtn').addEventListener('click', ()=>{
+  if(selMeals.size===0){ flash('Pick meals first, then download their cards.'); return; }
+  const html = buildCardsHtml();
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Recipe cards - ' + new Date().toISOString().slice(0,10) + '.html';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  flash('Downloaded. Open the file to print or save as PDF.');
+});
 
 function recordHistory(){
   const week = new Date().toISOString().slice(0,10);
@@ -2246,7 +2565,7 @@ function buildGroceryList(){
 
   const agg = {};
   selMeals.forEach((s,i)=>{
-    const m = meals[i];
+    const m = effMeal(meals[i], s.sub);
     const factor = s.servings / m.baseServ;
     m.ing.forEach(([key, qty])=>{ agg[key] = (agg[key]||0) + qty*factor; });
   });
@@ -2621,14 +2940,50 @@ const EMOJI_RULES = [
   [/cheese|cracker/i,'🧀'],[/hummus|dip|guac|salsa/i,'🥑'],[/nut|trail mix|almond|peanut/i,'🥜'],[/cookie|brownie|bar\b|muffin/i,'🍪'],
   [/carrot|celery|veggie sticks/i,'🥕'],[/pretzel/i,'🥨'],[/cider|juice/i,'🧃']
 ];
-const TILE_GRAD = {Mexican:['#f6c177','#e07a3f'],American:['#e8b4a0','#c0553f'],Italian:['#f2c7c0','#c8554f'],Mediterranean:['#b9d8c8','#4f8f7a'],Asian:['#f1d6a0','#cf8a2e'],Breakfast:['#ffe2a8','#f0a93b'],Lunch:['#cfe3b8','#6e9b4e'],Snack:['#e3d3f0','#8e6bb5'],Fruit:['#ffd1d1','#e5636b']};
+const TILE_GRAD = {Mexican:['#f6c177','#e07a3f'],American:['#e8b4a0','#c0553f'],Italian:['#f2c7c0','#c8554f'],Mediterranean:['#b9d8c8','#4f8f7a'],Asian:['#f1d6a0','#cf8a2e'],Indian:['#f4d27a','#c9792b'],Breakfast:['#ffe2a8','#f0a93b'],Lunch:['#cfe3b8','#6e9b4e'],Snack:['#e3d3f0','#8e6bb5'],Fruit:['#ffd1d1','#e5636b']};
 function foodEmoji(name, fallback){ for(const [re,e] of EMOJI_RULES){ if(re.test(name)) return e; } return fallback || '🍽️'; }
+/* ---- Dish photos from Pixabay (key is entered in the app, never stored in the code) ---- */
+function photoFor(item){
+  if(item.photo) return item.photo;
+  const e = loadJSON(PHOTO_KEY, {})[item.n];
+  return e && e.url ? e.url : '';
+}
+async function fetchPixabay(name){
+  const key = (localStorage.getItem(PIXA_KEY) || '').trim();
+  if(!key) return null;
+  const q = encodeURIComponent(name.replace(/[^a-zA-Z ]/g,' ').replace(/\s+/g,' ').trim().slice(0,90) + ' food');
+  const r = await fetch(`https://pixabay.com/api/?key=${encodeURIComponent(key)}&q=${q}&image_type=photo&category=food&safesearch=true&per_page=3`);
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  const hit = (j.hits || [])[0];
+  return hit ? hit.webformatURL : null;
+}
+async function refreshPhotos(list, onDone){
+  const cache = loadJSON(PHOTO_KEY, {});
+  const now = Date.now(); let loaded = 0, fails = 0;
+  for(const m of list){
+    const e = cache[m.n];
+    if(e && now - e.t < 24*3600*1000) continue;   // Pixabay asks for results to be cached 24 hours
+    try{
+      const url = await fetchPixabay(m.n);
+      cache[m.n] = {url: url || '', t: now}; loaded++;
+      saveJSON(PHOTO_KEY, cache);
+    }catch(err){
+      fails++; if(fails >= 3) break;               // stop early on a bad key or rate limit
+    }
+    await new Promise(r=> setTimeout(r, 700));
+  }
+  saveJSON(PHOTO_KEY, cache);
+  if(onDone) onDone(loaded, fails);
+}
+
 function thumb(item, size){
   const isSnack = !item.cuisine;
   const key = isSnack ? (item.cat === 'Fruit' ? 'Fruit' : 'Snack') : (item.type === 'Breakfast' ? 'Breakfast' : (TILE_GRAD[item.cuisine] ? item.cuisine : 'Lunch'));
   const g = TILE_GRAD[key] || TILE_GRAD.Lunch;
   const emo = foodEmoji(item.n, isSnack ? '🥨' : (cuisineIcon[item.cuisine] || '🍽️'));
-  const img = item.photo ? `<img src="${item.photo}" alt="${item.n.replace(/"/g,'')}" loading="lazy" onerror="this.remove()">` : '';
+  const ph = photoFor(item);
+  const img = ph ? `<img src="${ph}" alt="${item.n.replace(/"/g,'')}" loading="lazy" onerror="this.remove()">` : '';
   return `<div class="tile${size==='big' ? ' big' : ''}" style="background:linear-gradient(135deg,${g[0]},${g[1]});"><span>${emo}</span>${img}</div>`;
 }
 
@@ -2651,7 +3006,7 @@ function swapsHtml(meal){
     alts.map(({x,j,per:p})=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:13px;"><div style="flex:1;">${x.n}<div style="font-size:11px;color:var(--ink-soft);">${fmt(p)}/serving · saves ${fmt(per-p)} each</div></div><button type="button" class="mini-btn go" data-swap="${j}">${selMeals.has(i) ? 'Swap in' : 'Pick this'}</button></div>`).join('');
 }
 function wireInfoExtras(meal, servings){
-  const i = meals.indexOf(meal);
+  const i = meals.findIndex(m=> m.n===meal.n);
   const c = document.getElementById('infoContent');
   c.querySelectorAll('[data-swap]').forEach(b=> b.addEventListener('click', ()=>{
     const j = +b.dataset.swap;
