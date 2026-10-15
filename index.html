@@ -94,7 +94,7 @@
   .item-controls .srv{font-size:12px;color:var(--ink-soft);}
   .item-controls button{width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:var(--paper);cursor:pointer;}
   .item-controls .srv-val{font-size:15px;font-weight:700;min-width:22px;text-align:center;}
-  .item-controls button{width:32px !important;height:32px !important;font-size:18px;line-height:1;}
+  .item-controls button{width:40px !important;height:40px !important;font-size:18px;line-height:1;}
   .item-controls{padding-left:14px !important;}
   .fresh-tag{color:var(--sage);}
   #confirmBtn{width:100%;padding:14px;border-radius:10px;border:none;background:var(--paprika);color:var(--white);font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;}
@@ -176,6 +176,15 @@
   .grocery-row.got .gname{text-decoration:line-through;color:var(--ink-soft);}
   .gcheck{width:22px;height:22px;margin-right:10px;accent-color:var(--sage);flex-shrink:0;}
   #sharedView .sv-inner{max-width:560px;width:100%;margin:0 auto;padding:18px 16px 40px;}
+  .pricey{display:inline-block;font-size:11px;font-weight:600;background:#FBE9D7;color:#8A4B12;border-radius:10px;padding:2px 8px;margin-left:6px;vertical-align:middle;}
+  .wed-card{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:14px 0;}
+  .wed-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px;}
+  .wed-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer;}
+  .wed-row input{width:22px;height:22px;margin-top:1px;flex-shrink:0;accent-color:var(--sage);}
+  .wed-row.done span{text-decoration:line-through;opacity:.6;}
+  button[data-prot]{min-height:44px;min-width:96px;font-size:13px;}
+  .mini-btn{min-height:36px;}
+  .item-controls button{width:40px !important;height:40px !important;}
 </style>
 </head>
 <body>
@@ -213,6 +222,11 @@
       <span class="step-num">3</span>
       <div class="step-text"><b>Build your shopping list</b><span id="stepStatus3"></span></div>
       <button type="button" class="mini-btn go" id="stepGo3">Build list</button>
+    </div>
+      <div class="wed-card" id="wedCard">
+      <div class="wed-head"><b>🗓️ Wednesday refresh</b><span class="subtle" id="wedProgress"></span></div>
+      <div id="wedList"></div>
+      <button id="copyWeeklyMsg" type="button" class="mini-btn go" style="margin-top:8px;">📋 Copy my Wednesday message for Claude</button>
     </div>
   </section>
 
@@ -270,30 +284,20 @@
             <button id="pixSaveBtn" type="button" class="mini-btn go">Save &amp; load photos</button>
           </div>
           <div class="subtle" id="pixMsg" style="margin:6px 0 0;"></div>
+          <button id="pixLoadBtn" type="button" class="mini-btn go" style="margin-top:6px;">Load photos now</button>
         </div>
     <div style="display:flex; flex-direction:column; gap:6px;">
       <button id="syncBtn" type="button" style="font-size:12px;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--white);color:var(--ink-soft);cursor:pointer;">☁️ Sync</button>
       <button id="priceEditToggle" type="button">Edit prices</button>
       <button id="resetWeekBtn" type="button" style="font-size:12px;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--white);color:var(--ink-soft);font-weight:600;cursor:pointer;white-space:nowrap;">Reset week</button>
     </div>
-    <details>
-      <summary style="cursor:pointer;font-weight:600;">🗓️ Weekly refresh checklist (Wednesdays)</summary>
-      <ol style="font-size:13px;color:var(--ink-soft);padding-left:18px;margin:10px 0;">
-        <li>Rate last week's meals when the prompt appears (⭐ 1–5, add a note, save favorites).</li>
-        <li>Download the new Meijer ad PDF (and the Good Deal Days PDF).</li>
-        <li>Open your chat with Claude, attach the PDFs, and paste the message below.</li>
-        <li>Claude sends back an updated app file. Replace <b>index.html</b> in your GitHub Pages folder (see the README).</li>
-        <li>Open the app, tap <b>Update prices</b> if you changed any by hand, then pick this week's meals.</li>
-      </ol>
-      <button id="copyWeeklyMsg" type="button" class="mini-btn go">📋 Copy my Wednesday message for Claude</button>
-    </details>
       </div>
     </details>
   </section>
 
   <section data-tab="meals">
     <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
-      <button id="fillSlotsBtn" type="button" style="flex:1; min-width:140px; padding:10px; border-radius:8px; border:1px solid var(--sage); background:var(--white); color:var(--sage); font-size:13px; font-weight:600; cursor:pointer;">Fill remaining slots</button>
+      <button id="fillSlotsBtn" type="button" style="flex:1; min-width:140px; padding:10px; border-radius:8px; border:1px solid var(--sage); background:var(--sage); color:#fff; font-size:14px; font-weight:700; cursor:pointer;">✨ Auto-fill my week</button>
       <button id="savePlanBtn" type="button" style="flex:1; min-width:140px; padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--white); color:var(--ink-soft); font-size:13px; font-weight:600; cursor:pointer;">Save this week</button>
     </div>
     <div class="range-row" style="margin-bottom:14px;">
@@ -590,55 +594,55 @@ Sync.init = async function(){
 };
 
 const defaultCatalog = {
-  chicken_breast:{name:"Chicken breast, thin sliced",unit:"lb",price:5.99,cat:"Meat & seafood",freezer:true},
-  chicken_tenderloin:{name:"Chicken tenderloins",unit:"lb",price:3.99,cat:"Meat & seafood",freezer:true,hot:true},
-  ground_beef:{name:"Ground beef (Angus chuck)",unit:"lb",price:5.99,cat:"Meat & seafood",freezer:true},
-  ground_turkey:{name:"Ground turkey",unit:"lb",price:2.99,cat:"Meat & seafood",freezer:true},
-  pork_chops:{name:"Pork loin chops, bone-in",unit:"lb",price:1.99,cat:"Meat & seafood",freezer:true,hot:true},
-  pork_shoulder:{name:"Pork shoulder butt roast",unit:"lb",price:1.79,cat:"Meat & seafood",freezer:true},
+  chicken_breast:{name:"Fresh from Meijer Family Pack chicken breasts",unit:"lb",price:2.59,cat:"Meat & seafood",freezer:true,hot:true},
+  chicken_tenderloin:{name:"Chicken tenderloins",unit:"lb",price:3.99,cat:"Meat & seafood",freezer:true},
+  ground_beef:{name:"Meijer ground beef, 1 lb roll (BOGO 50% off: 2 rolls average $4.49 each)",unit:"lb",price:4.49,cat:"Meat & seafood",freezer:true,hot:true},
+  ground_turkey:{name:"Jennie-O ground turkey 93% lean, 3 lb pack",unit:"lb",price:4.99,cat:"Meat & seafood",freezer:true,hot:true},
+  pork_chops:{name:"Fresh from Meijer pork loin assorted chops, bone-in",unit:"lb",price:1.79,cat:"Meat & seafood",freezer:true,hot:true},
+  pork_shoulder:{name:"Fresh from Meijer pork shoulder butt roast, bone-in",unit:"lb",price:1.99,cat:"Meat & seafood",freezer:true,hot:true},
   spareribs:{name:"St. Louis-style spareribs",unit:"lb",price:2.99,cat:"Meat & seafood",freezer:true},
-  sirloin_steak:{name:"Angus top sirloin steak",unit:"lb",price:9.99,cat:"Meat & seafood",freezer:true},
+  sirloin_steak:{name:"Certified Angus beef top sirloin steak",unit:"lb",price:9.99,cat:"Meat & seafood",freezer:true,hot:true},
   flank_steak:{name:"Flank steak, sliced thin",unit:"lb",price:8.99,cat:"Meat & seafood",freezer:true},
-  sausage:{name:"Smoked sausage",unit:"pack",price:3.0,cat:"Meat & seafood",freezer:true},
+  sausage:{name:"Eckrich smoked sausage ropes, 12-14 oz",unit:"pack",price:2.29,cat:"Meat & seafood",freezer:true,hot:true},
   breakfast_sausage:{name:"Breakfast sausage links/patties",unit:"pack",price:2.99,cat:"Meat & seafood",freezer:true},
-  bacon:{name:"Bacon, 12-16oz",unit:"pack",price:3.99,cat:"Meat & seafood",freezer:true,hot:true},
+  bacon:{name:"Oscar Mayer bacon, 12-16 oz",unit:"pack",price:4.99,cat:"Meat & seafood",freezer:true,hot:true},
   tuna:{name:"Tuna pouch",unit:"ea",price:1.0,cat:"Meat & seafood"},
   shrimp:{name:"Shrimp, peeled & deveined",unit:"lb",price:5.99,cat:"Meat & seafood",freezer:true},
   salmon:{name:"Salmon fillet",unit:"lb",price:8.99,cat:"Meat & seafood",freezer:true},
-  eggs:{name:"Eggs, dozen",unit:"dozen",price:2.99,cat:"Meat & seafood"},
+  eggs:{name:"Eggland's Best cage-free eggs, dozen",unit:"dozen",price:2.99,cat:"Meat & seafood",hot:true},
   turkey_deli:{name:"Deli turkey",unit:"lb",price:9.99,cat:"Meat & seafood"},
   ham_deli:{name:"Deli ham",unit:"lb",price:9.99,cat:"Meat & seafood"},
 
-  peppers:{name:"Red/yellow/orange bell peppers, 3ct",unit:"pack",price:3.75,cat:"Produce",hot:true},
-  onions:{name:"Yellow onions, 3lb bag",unit:"bag",price:2.49,cat:"Produce"},
+  peppers:{name:"Multicolor bell peppers, 3 ct",unit:"pack",price:2.99,cat:"Produce",hot:true},
+  onions:{name:"Yellow onions, 3 lb bag",unit:"bag",price:2.49,cat:"Produce",hot:true},
   potatoes:{name:"Russet potatoes, 5lb bag",unit:"bag",price:4.49,cat:"Produce"},
-  sweet_potato:{name:"Sweet potatoes",unit:"lb",price:0.99,cat:"Produce",hot:true},
-  carrots:{name:"Baby carrots, 12oz",unit:"bag",price:1.0,cat:"Produce"},
+  sweet_potato:{name:"Sweet potatoes",unit:"lb",price:0.99,cat:"Produce"},
+  carrots:{name:"Fresh baby-cut carrots, 1 lb bag",unit:"bag",price:0.39,cat:"Produce",hot:true},
   celery:{name:"Celery",unit:"ea",price:2.5,cat:"Produce"},
-  apples:{name:"Granny Smith apples",unit:"lb",price:1.33,cat:"Produce",hot:true},
+  apples:{name:"Local apples, tote bag (per lb)",unit:"lb",price:0.99,cat:"Produce",hot:true},
   bananas:{name:"Bananas",unit:"lb",price:0.59,cat:"Produce"},
-  oranges:{name:"Cara Cara / mandarin oranges, 3lb bag",unit:"bag",price:3.99,cat:"Produce",hot:true},
-  grapes:{name:"Seedless grapes",unit:"lb",price:3.0,cat:"Produce"},
+  oranges:{name:"Cara Cara / mandarin oranges, 3 lb bag",unit:"bag",price:3.99,cat:"Produce",hot:true},
+  grapes:{name:"California green or black seedless grapes",unit:"lb",price:2.29,cat:"Produce",hot:true},
   watermelon:{name:"Mini seedless watermelon",unit:"ea",price:3.99,cat:"Produce"},
   cutfruit:{name:"Fresh cut fruit cups",unit:"cup",price:2.25,cat:"Produce"},
   saladkit:{name:"Chopped salad kit",unit:"pack",price:3.0,cat:"Produce"},
-  cucumber:{name:"Cucumber",unit:"ea",price:1.25,cat:"Produce",hot:true},
+  cucumber:{name:"Cucumber",unit:"ea",price:1.25,cat:"Produce"},
   tomato:{name:"Tomatoes",unit:"lb",price:1.99,cat:"Produce"},
   cherry_tomatoes:{name:"Cherry tomatoes",unit:"pint",price:2.99,cat:"Produce"},
   mushrooms:{name:"Mushrooms",unit:"pack",price:2.49,cat:"Produce"},
-  broccoli:{name:"Broccoli crowns",unit:"bag",price:1.5,cat:"Produce",hot:true},
+  broccoli:{name:"Broccoli crowns",unit:"bag",price:1.5,cat:"Produce"},
   frozen_stirfry_veg:{name:"Frozen stir-fry vegetables",unit:"bag",price:2.0,cat:"Produce"},
   lettuce:{name:"Lettuce",unit:"head",price:1.99,cat:"Produce"},
 
   sourcream:{name:"Sour cream, 8oz",unit:"ea",price:1.0,cat:"Dairy"},
-  cheese:{name:"Shredded cheese / cheese sticks",unit:"pack",price:2.0,cat:"Dairy",hot:true},
+  cheese:{name:"Sargento shredded cheese, 5-8 oz",unit:"pack",price:1.99,cat:"Dairy",hot:true},
   string_cheese:{name:"String cheese",unit:"pack",price:3.0,cat:"Dairy"},
   cottage_cheese:{name:"Cottage cheese cups",unit:"pack",price:1.0,cat:"Dairy"},
   creamcheese:{name:"Cream cheese",unit:"ea",price:3.49,cat:"Dairy"},
   heavy_cream:{name:"Heavy cream",unit:"pint",price:2.99,cat:"Dairy"},
   parmesan:{name:"Parmesan, grated",unit:"container",price:3.99,cat:"Dairy"},
   feta_cheese:{name:"Feta cheese",unit:"block",price:3.99,cat:"Dairy"},
-  yogurt:{name:"Yogurt cups",unit:"cup",price:1.0,cat:"Dairy",hot:true},
+  yogurt:{name:"Dannon Light & Fit / Oikos Greek yogurt, 4 pk",unit:"cup",price:0.75,cat:"Dairy",hot:true},
   milk:{name:"Milk, half gallon",unit:"ea",price:5.49,cat:"Dairy"},
 
   tortillas:{name:"Flour tortillas",unit:"pack",price:2.49,cat:"Pantry"},
@@ -647,11 +651,11 @@ const defaultCatalog = {
   bagels:{name:"Bagels",unit:"pack",price:3.99,cat:"Pantry",freezer:true},
   english_muffins:{name:"English muffins",unit:"pack",price:2.99,cat:"Pantry",freezer:true},
   frozen_fruit:{name:"Frozen fruit (berries/mixed)",unit:"bag",price:3.99,cat:"Produce"},
-  salsa:{name:"Salsa, 16oz",unit:"jar",price:2.49,cat:"Pantry",hot:true},
-  pasta:{name:"Pasta, 12-16oz",unit:"box",price:1.33,cat:"Pantry"},
+  salsa:{name:"Pace salsa, 24 oz",unit:"jar",price:2.49,cat:"Pantry",hot:true},
+  pasta:{name:"Barilla Al Bronzo organic pasta, 16 oz",unit:"box",price:1.79,cat:"Pantry",hot:true},
   rice:{name:"Rice",unit:"bag",price:3.49,cat:"Pantry"},
   noodles:{name:"Stir-fry noodles",unit:"pack",price:2.49,cat:"Pantry"},
-  marinara:{name:"Pasta sauce (Classico)",unit:"jar",price:1.99,cat:"Pantry",hot:true},
+  marinara:{name:"Prego pasta or Alfredo sauce, 14.5-24 oz",unit:"jar",price:1.39,cat:"Pantry",hot:true},
   mayo:{name:"Mayo, 30oz",unit:"jar",price:4.0,cat:"Pantry"},
   hummus:{name:"Hummus",unit:"tub",price:5.49,cat:"Pantry"},
   guacamole:{name:"Guacamole",unit:"tub",price:3.99,cat:"Pantry"},
@@ -662,12 +666,12 @@ const defaultCatalog = {
   teriyaki_sauce:{name:"Teriyaki sauce",unit:"bottle",price:2.99,cat:"Pantry"},
   marinade:{name:"Grill seasoning packet",unit:"packet",price:2.0,cat:"Pantry"},
   bread:{name:"Sandwich bread loaf",unit:"loaf",price:2.0,cat:"Pantry",freezer:true},
-  buns:{name:"Sandwich buns",unit:"pack",price:3.5,cat:"Pantry",freezer:true},
+  buns:{name:"Ball Park buns, 8 ct",unit:"pack",price:2.29,cat:"Pantry",freezer:true,hot:true},
   chips:{name:"Kettle-style chips",unit:"bag",price:2.0,cat:"Pantry"},
   pretzels:{name:"Pretzels",unit:"bag",price:2.0,cat:"Pantry"},
   goldfish:{name:"Goldfish crackers multipack",unit:"box",price:7.99,cat:"Pantry"},
   popcorn:{name:"Popcorn",unit:"bag",price:2.49,cat:"Pantry"},
-  cookies:{name:"Cookies",unit:"pack",price:3.5,cat:"Pantry"},
+  cookies:{name:"Fresh from Meijer sugar or ultimate cookies, 12 ct",unit:"pack",price:3.98,cat:"Pantry",hot:true},
   caramel_dip:{name:"Caramel dip",unit:"tub",price:4.0,cat:"Pantry"},
   oats:{name:"Oats",unit:"container",price:3.49,cat:"Pantry"},
   granola:{name:"Granola",unit:"bag",price:2.99,cat:"Pantry"},
@@ -682,7 +686,7 @@ const defaultCatalog = {
   pt_meijer_ess:{name:"Meijer Essential Paper Towels, 6 double rolls",unit:"pack",price:5.49,cat:"Household"},
   pt_bounty:{name:"Bounty Paper Towels, 6 triple rolls",unit:"pack",price:19.49,cat:"Household"},
   tide_liquid:{name:"Tide Liquid Detergent / Pods / Power Pods",unit:"ea",price:20.99,cat:"Household"},
-  purex_detergent:{name:"Purex Liquid Laundry Detergent",unit:"ea",price:4.99,cat:"Household",hot:true},
+  purex_detergent:{name:"Purex Liquid Laundry Detergent",unit:"ea",price:4.99,cat:"Household"},
   armhammer_detergent:{name:"Arm & Hammer Liquid Laundry Detergent",unit:"ea",price:6.99,cat:"Household"},
   snuggle_softener:{name:"Snuggle Fabric Softener or Sheets",unit:"ea",price:5.99,cat:"Household"},
   dawn_dish:{name:"Dawn Ultra Liquid Dish Soap",unit:"ea",price:9.99,cat:"Household"},
@@ -691,43 +695,50 @@ const defaultCatalog = {
   lysol_cleaner:{name:"Lysol All Purpose / Bathroom Cleaner",unit:"ea",price:3.49,cat:"Household"},
   waste_bags:{name:"Meijer Kitchen Waste Bags, 34-40ct",unit:"box",price:8.49,cat:"Household"},
   ziploc:{name:"Ziploc Bags",unit:"box",price:5.99,cat:"Household"},
-  canned_veg:{name:"Meijer Canned Vegetables",unit:"can",price:1.25,cat:"Pantry",hot:true},
+  canned_veg:{name:"Meijer Canned Vegetables",unit:"can",price:1.25,cat:"Pantry"},
   condensed_soup:{name:"Campbell's Condensed Soup",unit:"can",price:1.00,cat:"Pantry"},
-  chunky_soup:{name:"Campbell's Chunky Soup",unit:"can",price:1.25,cat:"Pantry",hot:true},
+  chunky_soup:{name:"Campbell's Chunky Soup",unit:"can",price:1.25,cat:"Pantry"},
   peanut_butter:{name:"Meijer Peanut Butter, 28oz",unit:"jar",price:3.99,cat:"Pantry"},
   olive_oil:{name:"Pompeian Olive Oil",unit:"bottle",price:7.99,cat:"Pantry"},
-  bbq_sauce:{name:"Meijer BBQ Sauce",unit:"bottle",price:1.49,cat:"Pantry",hot:true},
+  bbq_sauce:{name:"Sweet Baby Ray's BBQ sauce, 16-28 oz",unit:"bottle",price:1.99,cat:"Pantry",hot:true},
   coffee:{name:"Ground coffee or K-Cups",unit:"ea",price:7.99,cat:"Pantry"},
   cereal:{name:"Cereal",unit:"box",price:2.5,cat:"Pantry"},
-  canned_beans:{name:"Canned beans (black/kidney/chili)",unit:"can",price:1.25,cat:"Pantry",hot:true},
-  frozen_veg:{name:"Frozen vegetables (Steamfresh)",unit:"bag",price:1.2,cat:"Pantry",freezer:true,hot:true},
+  canned_beans:{name:"Canned beans (black/kidney/chili)",unit:"can",price:1.25,cat:"Pantry"},
+  frozen_veg:{name:"Frozen vegetables (Steamfresh)",unit:"bag",price:1.2,cat:"Pantry",freezer:true},
   frozen_burrito:{name:"Frozen burritos",unit:"pack",price:1.00,cat:"Pantry",freezer:true},
-  frozen_pizza:{name:"Meijer frozen pizza",unit:"ea",price:3.0,cat:"Pantry",freezer:true,hot:true},
+  frozen_pizza:{name:"Meijer frozen pizza",unit:"ea",price:3.0,cat:"Pantry",freezer:true},
   frozen_potpie:{name:"Frozen pot pie",unit:"ea",price:1.00,cat:"Pantry",freezer:true},
   frozen_sandwich:{name:"Frozen breakfast sandwich",unit:"ea",price:1.00,cat:"Pantry",freezer:true},
   frozen_skillet:{name:"Frozen skillet meal",unit:"ea",price:5.99,cat:"Pantry",freezer:true},
   frozen_texas_toast:{name:"Frozen Texas toast or garlic bread",unit:"box",price:1.99,cat:"Pantry",freezer:true},
-  chicken_thighs:{name:"Boneless skinless chicken thighs, family pack",unit:"lb",price:3.19,cat:"Meat & seafood",freezer:true},
+  chicken_thighs:{name:"Fresh from Meijer Family Pack chicken thighs, boneless",unit:"lb",price:1.69,cat:"Meat & seafood",freezer:true,hot:true},
   pork_loin_roast:{name:"Whole boneless pork loin",unit:"lb",price:1.99,cat:"Meat & seafood",freezer:true},
   pork_tenderloin:{name:"Marinated pork tenderloin, 18-22oz",unit:"pack",price:5.99,cat:"Meat & seafood",freezer:true},
-  roast_beef:{name:"Angus chuck roast",unit:"lb",price:6.99,cat:"Meat & seafood",freezer:true,hot:true},
+  roast_beef:{name:"Certified Angus beef round roast",unit:"lb",price:7.99,cat:"Meat & seafood",freezer:true,hot:true},
   meatballs:{name:"Frozen meatballs, 20-32oz",unit:"pack",price:5.99,cat:"Meat & seafood",freezer:true},
-  avocado:{name:"Mini avocados, 6ct bag",unit:"bag",price:2.99,cat:"Produce"},
+  avocado:{name:"Small avocados, 3 ct bag",unit:"bag",price:1.99,cat:"Produce"},
   baby_potatoes:{name:"Little potatoes, 1.5lb bag",unit:"bag",price:3.29,cat:"Produce"},
   whole_carrots:{name:"Whole carrots, 3lb bag",unit:"bag",price:2.49,cat:"Produce"},
   apple_cider:{name:"Apple cider, half gallon",unit:"ea",price:3.50,cat:"Produce"},
-  canned_tomatoes:{name:"Canned diced tomatoes",unit:"can",price:1.25,cat:"Pantry",hot:true},
+  canned_tomatoes:{name:"Canned diced tomatoes",unit:"can",price:1.25,cat:"Pantry"},
   butter:{name:"Butter",unit:"pack",price:4.49,cat:"Dairy"},
   chocolate_chips:{name:"Chocolate chip morsels",unit:"bag",price:4.00,cat:"Pantry"},
   ice_cream:{name:"Ice cream / frozen yogurt, 48oz",unit:"tub",price:2.99,cat:"Pantry",freezer:true},
-  pork_back_ribs:{name:"Pork loin back ribs",unit:"lb",price:3.49,cat:"Meat & seafood",freezer:true},
-  chicken_wings:{name:"Chicken wings, family pack",unit:"lb",price:2.79,cat:"Meat & seafood",freezer:true,hot:true},
-  lunch_meat:{name:"Oscar Mayer deli turkey or ham, 9 oz",unit:"pack",price:3.00,cat:"Meat & seafood",hot:true},
+  pork_back_ribs:{name:"Fresh from Meijer pork spareribs, never frozen",unit:"lb",price:2.79,cat:"Meat & seafood",freezer:true,hot:true},
+  chicken_wings:{name:"Chicken wings, family pack",unit:"lb",price:2.79,cat:"Meat & seafood",freezer:true},
+  lunch_meat:{name:"Oscar Mayer deli turkey or ham, 9 oz",unit:"pack",price:3.00,cat:"Meat & seafood"},
   chicken_nuggets:{name:"Frozen breaded chicken nuggets",unit:"bag",price:4.99,cat:"Meat & seafood",freezer:true},
-  brussels:{name:"Brussels sprouts, 1 lb bag",unit:"bag",price:2.50,cat:"Produce",hot:true},
-  yellow_potatoes:{name:"Yellow or red potatoes, 3 lb bag",unit:"bag",price:2.99,cat:"Produce",hot:true},
-  hawaiian_rolls:{name:"Sweet Hawaiian buns, 12 ct",unit:"pack",price:3.99,cat:"Pantry",hot:true},
-  pantrystaples:{name:"Chili powder, cumin, paprika, garlic powder, salt, olive oil",unit:"set",price:0,cat:"Pantry"}
+  brussels:{name:"Brussels sprouts, 1 lb bag",unit:"bag",price:2.50,cat:"Produce"},
+  yellow_potatoes:{name:"The Little Potato Co. creamer potatoes, 3 lb bag",unit:"bag",price:3.99,cat:"Produce",hot:true},
+  hawaiian_rolls:{name:"Sweet Hawaiian buns, 12 ct",unit:"pack",price:3.99,cat:"Pantry"},
+  pantrystaples:{name:"Chili powder, cumin, paprika, garlic powder, salt, olive oil",unit:"set",price:0,cat:"Pantry"},
+  wright_bacon:{name:"Wright Bacon, 24 oz",unit:"pack",price:8.99,cat:"Meat & seafood",hot:true},
+  jimmy_dean_sausage:{name:"Jimmy Dean fresh or fully cooked sausage, 9.6-16 oz (2 for $8)",unit:"pack",price:4.00,cat:"Meat & seafood",hot:true},
+  hormel_beef:{name:"Hormel fully cooked beef entree, 15 oz",unit:"pack",price:8.49,cat:"Pantry"},
+  jimmy_dean_sandwich:{name:"Jimmy Dean sandwiches, 12.5-18.8 oz (buy 5 price)",unit:"ea",price:4.99,cat:"Pantry",freezer:true},
+  kraft_dressing:{name:"Kraft salad dressing, 16 oz (buy 5 price)",unit:"bottle",price:1.99,cat:"Pantry",hot:true},
+  sargento_breaks:{name:"Sargento Balanced Breaks, 3 for $10",unit:"pack",price:3.33,cat:"Dairy",hot:true},
+  deli_cheese:{name:"Frederik's by Meijer deli cheese (deli dept)",unit:"lb",price:6.99,cat:"Meat & seafood"}
 };
 
 const STORAGE_KEY = "mealPlannerPriceOverrides";
@@ -735,7 +746,7 @@ const FAV_KEY = "mealPlannerFavorites";
 
 function loadCatalog(){
   // Prices change with every weekly ad: drop last week's hand-edited prices once when a new ad's defaults ship.
-  try{ if(localStorage.getItem('mealPlannerPriceAd') !== '2026-10-07'){ localStorage.removeItem('mealPlannerPriceOverrides'); localStorage.setItem('mealPlannerPriceAd','2026-10-07'); } }catch(e){}
+  try{ if(localStorage.getItem('mealPlannerPriceAd') !== '2026-10-14'){ localStorage.removeItem('mealPlannerPriceOverrides'); localStorage.setItem('mealPlannerPriceAd','2026-10-14'); } }catch(e){}
   const cat = {};
   Object.keys(defaultCatalog).forEach(k=> cat[k] = {...defaultCatalog[k]});
   try{
@@ -764,8 +775,8 @@ const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 // Each weekly update adds a fresh batch of meals/snacks tagged with this id.
 // "New this week" shows only the current batch (minus anything you've starred).
 const PHOTO_KEY = 'mealPlannerPhotos', PIXA_KEY = 'mealPlannerPixabayKey';
-const CURRENT_BATCH = "2026-10-12";
-const CURRENT_BATCH_LABEL = "Oct 12";
+const CURRENT_BATCH = "2026-10-14";
+const CURRENT_BATCH_LABEL = "Oct 14";
 const BATCH_DATE = new Date("2026-10-12T00:00:00");
 
 const meals = [
@@ -1029,186 +1040,548 @@ const meals = [
     steps:["Preheat the oven to 425°F (220°C).","Halve the little potatoes, slice the sausage, peppers and onion, and toss everything with oil, salt and pepper on a sheet pan.","Roast 30-35 minutes, stirring once, until the potatoes are tender and browned."],
     ing:[["sausage",1],["baby_potatoes",1],["peppers",1],["onions",0.33]]},
 
-  {n:"Bacon & cheddar breakfast wraps",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, eggs, cheese, tortillas",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Pull the eggs off the heat while they still look slightly wet; they finish cooking in the wrap.",pantry:"salt, pepper",batch:CURRENT_BATCH,
+  {n:"Bacon & cheddar breakfast wraps",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, eggs, cheese, tortillas",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Pull the eggs off the heat while they still look slightly wet; they finish cooking in the wrap.",pantry:"salt, pepper",batch:"2026-10-12",
     steps:["Lay the bacon in a cold large skillet, set over medium heat and cook 8-10 minutes, turning, until crisp. Drain on paper towels and crumble.", "Whisk the eggs with {x:1/4 tsp} salt, {x:1/8 tsp} pepper and {x:1 tbsp} milk or water.", "Pour off all but a thin film of bacon fat. Cook the eggs over medium-low heat, stirring slowly, 2-3 minutes until just set but still glossy.", "Warm each tortilla 20 seconds per side in a dry pan. Fill with eggs, bacon and shredded cheese.", "Fold in the sides and roll tightly. For a crisp outside, toast seam-side down 1 minute."],
     ing:[["bacon", 1], ["eggs", 1], ["tortillas", 1], ["cheese", 0.5]]},
-  {n:"Orange yogurt granola bowls",type:"Breakfast",cuisine:"Breakfast",note:"Greek yogurt, oranges, granola",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Keep the granola separate until serving so it stays crunchy.",pantry:"honey (optional), cinnamon",batch:CURRENT_BATCH,
+  {n:"Orange yogurt granola bowls",type:"Breakfast",cuisine:"Breakfast",note:"Greek yogurt, oranges, granola",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Keep the granola separate until serving so it stays crunchy.",pantry:"honey (optional), cinnamon",batch:"2026-10-12",
     steps:["Cut the top and bottom off each orange, stand it up and slice off the peel and white pith in strips. Cut between the membranes to release the segments.", "Stir {x:1 tsp} honey into the yogurt if you like it sweeter.", "Divide the yogurt among bowls and arrange the orange segments on top.", "Add the granola just before eating, plus a pinch of cinnamon.", "Squeeze any leftover orange juice over the top."],
     ing:[["yogurt", 4], ["oranges", 0.34], ["granola", 1]]},
-  {n:"Bacon, potato & egg skillet",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, yellow potatoes, eggs",baseServ:4,method:"skillet",time:"35 min",tip:"Dry the boiled potatoes well. Dry potatoes brown, wet ones steam.",pantry:"salt, pepper, paprika",batch:CURRENT_BATCH,
+  {n:"Bacon, potato & egg skillet",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, yellow potatoes, eggs",baseServ:4,method:"skillet",time:"35 min",tip:"Dry the boiled potatoes well. Dry potatoes brown, wet ones steam.",pantry:"salt, pepper, paprika",batch:"2026-10-12",
     steps:["Cut the potatoes into 1/2-inch cubes. Cover with cold salted water, bring to a boil and cook 5-6 minutes until just tender; drain well.", "Cook the bacon in a large skillet over medium heat until crisp, 8-10 minutes. Lift out, crumble, and leave 2 tablespoons of fat in the pan.", "Add the potatoes and diced onion to the fat. Cook, stirring only every 2 minutes, 8-10 minutes until deeply golden. Season with {x:1/2 tsp} salt, {x:1/4 tsp} pepper and {x:1/2 tsp} paprika.", "Make wells in the potatoes and crack in the eggs. Cover and cook 3-4 minutes for runny yolks, 5-6 for set.", "Scatter the bacon on top and serve from the pan."],
     ing:[["bacon", 1], ["yellow_potatoes", 0.5], ["eggs", 1], ["onions", 0.2]]},
-  {n:"Sweet potato pancakes",type:"Breakfast",cuisine:"Breakfast",note:"Pancake mix, mashed sweet potato, syrup",baseServ:4,method:"skillet",time:"30 min",tip:"These brown fast because of the sweet potato sugars. Keep the heat at medium, not high.",pantry:"cinnamon, salt, milk",batch:CURRENT_BATCH,
+  {n:"Sweet potato pancakes",type:"Breakfast",cuisine:"Breakfast",note:"Pancake mix, mashed sweet potato, syrup",baseServ:4,method:"skillet",time:"30 min",tip:"These brown fast because of the sweet potato sugars. Keep the heat at medium, not high.",pantry:"cinnamon, salt, milk",batch:"2026-10-12",
     steps:["Prick the sweet potatoes and microwave 5-7 minutes until soft (or boil peeled chunks 12 minutes). Mash until smooth and let cool 5 minutes.", "Mix the pancake mix as directed on the box, then whisk in the mashed sweet potato, {x:1/2 tsp} cinnamon and a pinch of salt. Thin with a splash of milk if the batter is stiff.", "Heat a griddle or skillet over medium heat and brush lightly with butter.", "Scoop 1/4 cup batter per pancake. Cook 2-3 minutes until bubbles form and the edges look set, flip and cook 2 minutes more.", "Serve warm with butter and syrup."],
     ing:[["pancake_mix", 1], ["sweet_potato", 1], ["syrup", 0.5], ["butter", 0.25]]},
-  {n:"Ham, egg & cheese Hawaiian sliders",type:"Breakfast",cuisine:"Breakfast",note:"Sweet rolls, ham, eggs, cheese",baseServ:4,method:"oven",time:"30 min",tip:"Slightly undercook the eggs. They set further in the oven.",pantry:"garlic powder, salt",batch:CURRENT_BATCH,
+  {n:"Ham, egg & cheese Hawaiian sliders",type:"Breakfast",cuisine:"Breakfast",note:"Sweet rolls, ham, eggs, cheese",baseServ:4,method:"oven",time:"30 min",tip:"Slightly undercook the eggs. They set further in the oven.",pantry:"garlic powder, salt",batch:"2026-10-12",
     steps:["Heat the oven to 350°F (175°C). Keep the rolls connected as one sheet and slice horizontally through the middle.", "Scramble the eggs with a pinch of salt in a buttered skillet over medium-low heat until barely set, about 2 minutes.", "Lay the bottom half in a baking dish. Layer ham, cheese and eggs, then replace the top.", "Melt {x:1 tbsp} butter with {x:1/2 tsp} garlic powder and brush over the tops.", "Cover with foil and bake 10 minutes, uncover and bake 5 more until the tops are golden and the cheese is melted. Cut apart."],
     ing:[["hawaiian_rolls", 1], ["eggs", 1], ["ham_deli", 0.5], ["cheese", 0.5], ["butter", 0.25]]},
-  {n:"Cottage cheese & fruit plates",type:"Breakfast",cuisine:"Breakfast",note:"Cottage cheese, grapes, oranges",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Add toast or a handful of granola for a more filling plate.",pantry:"honey, cinnamon",batch:CURRENT_BATCH,
+  {n:"Cottage cheese & fruit plates",type:"Breakfast",cuisine:"Breakfast",note:"Cottage cheese, grapes, oranges",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Add toast or a handful of granola for a more filling plate.",pantry:"honey, cinnamon",batch:"2026-10-12",
     steps:["Peel the oranges, removing the white pith, and break into segments.", "Rinse the grapes and pull them off the stems.", "Spoon the cottage cheese onto plates or into shallow bowls.", "Arrange the grapes and oranges alongside and finish with a drizzle of honey and a pinch of cinnamon."],
     ing:[["cottage_cheese", 4], ["grapes", 1], ["oranges", 0.34]]},
-  {n:"Veggie egg muffin cups",type:"Breakfast",cuisine:"Breakfast",note:"Eggs, peppers, onion, cheese",baseServ:4,method:"oven",time:"30 min",tip:"Make a double batch. They reheat in the microwave in 30 seconds.",pantry:"oil, salt, pepper, milk",batch:CURRENT_BATCH,
+  {n:"Veggie egg muffin cups",type:"Breakfast",cuisine:"Breakfast",note:"Eggs, peppers, onion, cheese",baseServ:4,method:"oven",time:"30 min",tip:"Make a double batch. They reheat in the microwave in 30 seconds.",pantry:"oil, salt, pepper, milk",batch:"2026-10-12",
     steps:["Heat the oven to 375°F (190°C). Grease a 12-cup muffin tin well, or use silicone liners.", "Finely dice the peppers and onion. Sauté in {x:1 tsp} oil 3 minutes to soften and drive off moisture.", "Whisk the eggs with {x:1/2 tsp} salt, {x:1/4 tsp} pepper and {x:2 tbsp} milk. Stir in the vegetables and half the cheese.", "Fill each cup about 3/4 full and top with the remaining cheese.", "Bake 18-20 minutes until puffed and a knife comes out clean. Rest 3 minutes before lifting out."],
     ing:[["eggs", 1], ["peppers", 0.5], ["onions", 0.2], ["cheese", 0.5]]},
-  {n:"Ham, egg & cheese bagels",type:"Breakfast",cuisine:"Breakfast",note:"Bagels, ham, eggs, cheese",baseServ:4,quick:true,method:"skillet",time:"15 min",tip:"Break the yolk with the spatula before assembling for a neater sandwich.",pantry:"butter, salt, pepper",batch:CURRENT_BATCH,
+  {n:"Ham, egg & cheese bagels",type:"Breakfast",cuisine:"Breakfast",note:"Bagels, ham, eggs, cheese",baseServ:4,quick:true,method:"skillet",time:"15 min",tip:"Break the yolk with the spatula before assembling for a neater sandwich.",pantry:"butter, salt, pepper",batch:"2026-10-12",
     steps:["Split the bagels and toast until golden.", "Heat {x:1 tsp} butter in a skillet over medium heat. Fry the eggs 2-3 minutes, flipping if you like them over-easy, seasoning with salt and pepper.", "In the last minute, warm the ham slices in the same pan and lay a slice of cheese on each so it softens.", "Build the sandwiches: ham, cheese, egg, then the bagel top.", "Serve hot."],
     ing:[["bagels", 1], ["eggs", 1], ["ham_deli", 0.5], ["cheese", 0.5]]},
-  {n:"Banana oat pancakes",type:"Breakfast",cuisine:"Breakfast",note:"Oats, bananas, eggs",baseServ:4,method:"skillet",time:"20 min",tip:"Riper bananas mean sweeter pancakes. Brown-spotted ones are perfect.",pantry:"cinnamon, salt, butter",batch:CURRENT_BATCH,
+  {n:"Banana oat pancakes",type:"Breakfast",cuisine:"Breakfast",note:"Oats, bananas, eggs",baseServ:4,method:"skillet",time:"20 min",tip:"Riper bananas mean sweeter pancakes. Brown-spotted ones are perfect.",pantry:"cinnamon, salt, butter",batch:"2026-10-12",
     steps:["Add the oats, ripe bananas and eggs to a blender with {x:1/2 tsp} cinnamon and a pinch of salt. Blend until smooth and let rest 5 minutes to thicken.", "Heat a nonstick skillet over medium heat and brush lightly with butter.", "Pour scoops of batter about 3 inches wide. Cook 2-3 minutes until the surface looks matte and the bottoms are golden.", "Flip carefully and cook 1-2 minutes more.", "Serve with syrup and sliced banana."],
     ing:[["oats", 1], ["bananas", 2], ["eggs", 0.5], ["syrup", 0.5]]},
-  {n:"Breakfast pizza English muffins",type:"Breakfast",cuisine:"Breakfast",note:"English muffins, eggs, cheese, marinara",baseServ:4,method:"oven",time:"20 min",tip:"Pull the eggs early. Cooked-through eggs turn rubbery in the oven.",pantry:"Italian seasoning, salt",batch:CURRENT_BATCH,
+  {n:"Breakfast pizza English muffins",type:"Breakfast",cuisine:"Breakfast",note:"English muffins, eggs, cheese, marinara",baseServ:4,method:"oven",time:"20 min",tip:"Pull the eggs early. Cooked-through eggs turn rubbery in the oven.",pantry:"Italian seasoning, salt",batch:"2026-10-12",
     steps:["Heat the oven to 400°F (200°C). Split the English muffins and toast lightly on a sheet pan 3 minutes.", "Scramble the eggs with a pinch of salt until just barely set.", "Spread 1 tablespoon marinara on each half, then top with eggs and shredded cheese.", "Add {x:1/4 tsp} Italian seasoning over the top.", "Bake 6-8 minutes until the cheese is melted and bubbling at the edges."],
     ing:[["english_muffins", 1], ["eggs", 0.5], ["cheese", 0.5], ["marinara", 0.25]]},
-  {n:"Crispy chicken nugget wraps",type:"Lunch",cuisine:"Lunch",note:"Chicken nuggets, lettuce, cheese, tortillas",baseServ:4,method:"oven",time:"25 min",tip:"Bake on the top rack for the crispest coating.",pantry:"dipping sauce of your choice",batch:CURRENT_BATCH,
+  {n:"Crispy chicken nugget wraps",type:"Lunch",cuisine:"Lunch",note:"Chicken nuggets, lettuce, cheese, tortillas",baseServ:4,method:"oven",time:"25 min",tip:"Bake on the top rack for the crispest coating.",pantry:"dipping sauce of your choice",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C). Spread the nuggets on a sheet pan and bake 14-16 minutes, flipping once, until crisp and hot inside.", "Shred the lettuce and shred or slice the cheese.", "Warm the tortillas 15-20 seconds each so they fold without cracking.", "Fill with nuggets, lettuce and cheese. Add a drizzle of ranch, BBQ or honey mustard.", "Roll up and slice in half."],
     ing:[["chicken_nuggets", 1], ["tortillas", 1], ["lettuce", 0.5], ["cheese", 0.5]]},
-  {n:"Pizza & side salad",type:"Lunch",cuisine:"Italian",note:"Meijer frozen pizza, salad kit",baseServ:4,method:"oven",time:"25 min",tip:"Add sliced cucumber or bell pepper to the salad to stretch it.",batch:CURRENT_BATCH,
+  {n:"Pizza & side salad",type:"Lunch",cuisine:"Italian",note:"Meijer frozen pizza, salad kit",baseServ:4,method:"oven",time:"25 min",tip:"Add sliced cucumber or bell pepper to the salad to stretch it.",batch:"2026-10-12",
     steps:["Heat the oven as directed on the pizza box (usually 400-425°F).", "Bake the pizzas directly on the rack for crisp bottoms, 12-15 minutes.", "Meanwhile, empty the salad kit into a large bowl and toss with the dressing.", "Let the pizzas rest 3 minutes, then slice.", "Serve each slice with a big scoop of salad."],
     ing:[["frozen_pizza", 2], ["saladkit", 1]]},
-  {n:"Ham & cheese Hawaiian sliders",type:"Lunch",cuisine:"Lunch",note:"Sweet rolls, ham, cheese",baseServ:4,method:"oven",time:"25 min",tip:"Add a few dill pickle slices for tang against the sweet rolls.",pantry:"mustard, garlic powder, onion powder",batch:CURRENT_BATCH,
+  {n:"Ham & cheese Hawaiian sliders",type:"Lunch",cuisine:"Lunch",note:"Sweet rolls, ham, cheese",baseServ:4,method:"oven",time:"25 min",tip:"Add a few dill pickle slices for tang against the sweet rolls.",pantry:"mustard, garlic powder, onion powder",batch:"2026-10-12",
     steps:["Heat the oven to 350°F (175°C). Keep the rolls connected and slice the whole sheet in half horizontally.", "Spread {x:1 tbsp} mustard (or mayo) on the cut sides. Layer the bottoms with ham and cheese, then replace the tops.", "Melt {x:2 tbsp} butter with {x:1/2 tsp} garlic powder and {x:1/2 tsp} onion powder; brush over the tops.", "Cover with foil and bake 12 minutes, then uncover and bake 3-4 minutes until golden.", "Cut into individual sliders."],
     ing:[["hawaiian_rolls", 1], ["ham_deli", 0.75], ["cheese", 0.75], ["butter", 0.25]]},
-  {n:"Turkey hummus wraps",type:"Lunch",cuisine:"Lunch",note:"Tortillas, turkey, hummus, cucumber",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Hummus acts as the glue, so spread it edge to edge for a tight roll.",pantry:"salt, pepper",batch:CURRENT_BATCH,
+  {n:"Turkey hummus wraps",type:"Lunch",cuisine:"Lunch",note:"Tortillas, turkey, hummus, cucumber",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Hummus acts as the glue, so spread it edge to edge for a tight roll.",pantry:"salt, pepper",batch:"2026-10-12",
     steps:["Slice the cucumber into thin sticks and the bell pepper into thin strips.", "Spread 2 tablespoons hummus over each tortilla, leaving a 1-inch border.", "Layer on turkey, cucumber, pepper and a handful of lettuce or spinach if you have it.", "Fold the sides in and roll up tightly, then slice in half on a diagonal.", "Wrap in foil to pack for later."],
     ing:[["tortillas", 1], ["hummus", 1], ["turkey_deli", 0.75], ["cucumber", 1], ["peppers", 0.5]]},
-  {n:"Chunky soup & grilled cheese",type:"Lunch",cuisine:"Lunch",note:"Campbell's Chunky soup, grilled cheese",baseServ:4,method:"skillet",time:"20 min",tip:"Medium-low heat is the secret. High heat burns the bread before the cheese melts.",pantry:"butter",batch:CURRENT_BATCH,
+  {n:"Chunky soup & grilled cheese",type:"Lunch",cuisine:"Lunch",note:"Campbell's Chunky soup, grilled cheese",baseServ:4,method:"skillet",time:"20 min",tip:"Medium-low heat is the secret. High heat burns the bread before the cheese melts.",pantry:"butter",batch:"2026-10-12",
     steps:["Pour the soup into a pot with a splash of water. Heat over medium, stirring, until steaming, about 6 minutes.", "Butter one side of each slice of bread. Place two slices butter-side down in a cold skillet and top with cheese.", "Cover with the second slice, butter-side up. Cook over medium-low heat 3-4 minutes per side until deep golden and the cheese is melted.", "Cut the sandwiches in half and serve with the soup for dipping."],
     ing:[["chunky_soup", 4], ["bread", 1], ["cheese", 0.75], ["butter", 0.25]]},
-  {n:"Southwest corn & bean rice bowls",type:"Lunch",cuisine:"Mexican",note:"Corn, black beans, rice, salsa",baseServ:4,method:"boil",time:"25 min",tip:"Let the corn sit undisturbed 2 minutes in the pan for a little char.",pantry:"oil, cumin, chili powder, salt",batch:CURRENT_BATCH,
+  {n:"Southwest corn & bean rice bowls",type:"Lunch",cuisine:"Mexican",note:"Corn, black beans, rice, salsa",baseServ:4,method:"boil",time:"25 min",tip:"Let the corn sit undisturbed 2 minutes in the pan for a little char.",pantry:"oil, cumin, chili powder, salt",batch:"2026-10-12",
     steps:["Cook the rice as directed on the bag, adding a pinch of salt.", "Drain and rinse the beans and corn.", "Warm {x:1 tsp} oil in a skillet. Add the beans, corn, {x:1/2 tsp} cumin, {x:1/2 tsp} chili powder and {x:1/4 tsp} salt and cook 4-5 minutes until hot and slightly browned.", "Spoon rice into bowls, top with the bean-corn mixture and salsa, and finish with shredded cheese.", "Add sliced avocado or a spoon of sour cream if you have it."],
     ing:[["rice", 1], ["canned_beans", 2], ["canned_veg", 2], ["salsa", 0.5], ["cheese", 0.5]]},
-  {n:"BBQ chicken tenderloin sandwiches",type:"Lunch",cuisine:"American",note:"Chicken tenderloins, BBQ sauce, buns",baseServ:4,method:"skillet",time:"25 min",tip:"Thin the sauce with 1 tablespoon water if it clumps.",pantry:"oil, paprika, garlic powder, salt",batch:CURRENT_BATCH,
+  {n:"BBQ chicken tenderloin sandwiches",type:"Lunch",cuisine:"American",note:"Chicken tenderloins, BBQ sauce, buns",baseServ:4,method:"skillet",time:"25 min",tip:"Thin the sauce with 1 tablespoon water if it clumps.",pantry:"oil, paprika, garlic powder, salt",batch:"2026-10-12",
     steps:["Cut the tenderloins into 1-inch pieces. Season with {x:1/2 tsp} salt, {x:1/2 tsp} paprika and {x:1/4 tsp} garlic powder.", "Heat {x:1 tbsp} oil in a large skillet over medium-high heat. Cook the chicken 6-7 minutes, stirring, until golden and no longer pink (165°F / 74°C).", "Turn the heat to low and stir in the BBQ sauce. Simmer 2 minutes until glossy.", "Toast the buns cut-side down in a dry pan 1 minute.", "Pile the chicken onto the buns and top with pickles or slaw."],
     ing:[["chicken_tenderloin", 1.25], ["bbq_sauce", 1], ["buns", 1]]},
-  {n:"Italian deli sandwiches",type:"Lunch",cuisine:"Italian",note:"Deli meat, cheese, lettuce, tomato, buns",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Salt the tomato slices. It makes a noticeable difference.",pantry:"oil, vinegar, Italian seasoning, salt, pepper",batch:CURRENT_BATCH,
+  {n:"Italian deli sandwiches",type:"Lunch",cuisine:"Italian",note:"Deli meat, cheese, lettuce, tomato, buns",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Salt the tomato slices. It makes a noticeable difference.",pantry:"oil, vinegar, Italian seasoning, salt, pepper",batch:"2026-10-12",
     steps:["Split the buns and lightly toast them if you like.", "Mix {x:1 tbsp} oil, {x:2 tsp} vinegar and {x:1/2 tsp} Italian seasoning in a small bowl; drizzle over the cut sides.", "Layer on the deli meat, cheese, thin-sliced tomato and shredded lettuce.", "Season the tomato with a pinch of salt and pepper.", "Close, press down and slice in half."],
     ing:[["lunch_meat", 2], ["buns", 1], ["cheese", 0.5], ["lettuce", 0.5], ["tomato", 0.5]]},
-  {n:"Loaded sweet potato lunch bowls",type:"Lunch",cuisine:"Mexican",note:"Baked sweet potatoes, black beans, salsa",baseServ:4,method:"oven",time:"55 min",tip:"Bake extras and save them: they make a 3-minute lunch later in the week.",pantry:"oil, cumin, chili powder, salt",batch:CURRENT_BATCH,
+  {n:"Loaded sweet potato lunch bowls",type:"Lunch",cuisine:"Mexican",note:"Baked sweet potatoes, black beans, salsa",baseServ:4,method:"oven",time:"55 min",tip:"Bake extras and save them: they make a 3-minute lunch later in the week.",pantry:"oil, cumin, chili powder, salt",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C). Scrub the sweet potatoes, prick all over with a fork, rub with oil and bake on a foil-lined sheet 40-50 minutes until a knife slides in easily (or microwave 8-10 minutes).", "Warm the beans in a small pot with {x:1/2 tsp} cumin, {x:1/4 tsp} chili powder and a pinch of salt for 5 minutes.", "Split the potatoes lengthwise and fluff the insides with a fork.", "Top with beans, shredded cheese, salsa and a spoon of sour cream.", "Add a squeeze of lime if you have it."],
     ing:[["sweet_potato", 2], ["canned_beans", 1], ["cheese", 0.5], ["salsa", 0.5], ["sourcream", 0.5]]},
-  {n:"Egg salad sandwiches",type:"Lunch",cuisine:"Lunch",note:"Eggs, mayo, celery, bread",baseServ:4,method:"boil",time:"25 min",tip:"Chill the salad 15 minutes before serving. The flavors meld.",pantry:"mustard, salt, pepper, paprika",batch:CURRENT_BATCH,
+  {n:"Egg salad sandwiches",type:"Lunch",cuisine:"Lunch",note:"Eggs, mayo, celery, bread",baseServ:4,method:"boil",time:"25 min",tip:"Chill the salad 15 minutes before serving. The flavors meld.",pantry:"mustard, salt, pepper, paprika",batch:"2026-10-12",
     steps:["Place the eggs in a pot, cover with cold water by 1 inch and bring to a boil. Turn off the heat, cover and let stand 11 minutes.", "Move the eggs to ice water for 5 minutes, then peel under running water.", "Chop the eggs and mix with the mayo, finely diced celery, {x:1 tsp} mustard, {x:1/2 tsp} salt and {x:1/4 tsp} pepper.", "Taste and add a pinch of paprika or a splash of pickle juice.", "Spread on the bread and add lettuce if you like."],
     ing:[["eggs", 1], ["mayo", 0.3], ["celery", 0.5], ["bread", 1]]},
-  {n:"Pan-seared pork chops with yellow potatoes",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, broccoli",baseServ:4,method:"skillet",time:"40 min",tip:"Bone-in chops stay juicier. Resting 5 minutes lets the juices redistribute.",pantry:"oil, butter, salt, pepper, garlic powder, paprika",batch:CURRENT_BATCH,
+  {n:"Pan-seared pork chops with yellow potatoes",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, broccoli",baseServ:4,method:"skillet",time:"40 min",tip:"Bone-in chops stay juicier. Resting 5 minutes lets the juices redistribute.",pantry:"oil, butter, salt, pepper, garlic powder, paprika",batch:"2026-10-12",
     steps:["Take the chops out of the fridge 15 minutes ahead. Pat very dry and season both sides with {x:1 1/2 tsp} salt, {x:1/2 tsp} pepper, {x:1 tsp} garlic powder and {x:1 tsp} paprika.", "Cut the potatoes into 1-inch chunks, cover with salted cold water, boil 10-12 minutes until tender; drain and let steam dry.", "Heat {x:2 tbsp} oil in a large skillet over medium-high until shimmering. Sear the chops 4-5 minutes per side without moving them, until deep golden and 145°F (63°C) inside.", "Add {x:2 tbsp} butter to the pan, tilt and spoon it over the chops for the last minute. Rest the chops 5 minutes.", "In the same pan, brown the potatoes in the drippings 5 minutes. Steam the broccoli 4 minutes and serve everything together."],
     ing:[["pork_chops", 2.5], ["yellow_potatoes", 1], ["broccoli", 2], ["pantrystaples", 1]]},
-  {n:"Smothered pork chops over rice",type:"Dinner",cuisine:"American",note:"Pork chops, mushroom soup, onions, rice",baseServ:4,method:"skillet",time:"45 min",tip:"Flouring the chops thickens the gravy and gives them a nice crust.",pantry:"oil, flour, salt, pepper, garlic powder",batch:CURRENT_BATCH,
+  {n:"Smothered pork chops over rice",type:"Dinner",cuisine:"American",note:"Pork chops, mushroom soup, onions, rice",baseServ:4,method:"skillet",time:"45 min",tip:"Flouring the chops thickens the gravy and gives them a nice crust.",pantry:"oil, flour, salt, pepper, garlic powder",batch:"2026-10-12",
     steps:["Season the chops with {x:1 tsp} salt, {x:1/2 tsp} pepper and {x:1 tsp} garlic powder, then dredge lightly in {x:2 tbsp} flour.", "Brown in {x:2 tbsp} oil over medium-high heat 3 minutes per side; set aside.", "Add the sliced onion to the pan with a splash of water and cook 5 minutes until soft and golden, scraping up the browned bits.", "Whisk in the condensed soup and {x:1/2 cup} water. Return the chops, cover and simmer on low 15-18 minutes until 145°F (63°C).", "Meanwhile cook the rice. Serve the chops and gravy over rice."],
     ing:[["pork_chops", 2.5], ["condensed_soup", 2], ["onions", 0.33], ["rice", 1]]},
-  {n:"Apple cider pork chops",type:"Dinner",cuisine:"American",note:"Pork chops, apples, apple cider",baseServ:4,method:"skillet",time:"35 min",tip:"Granny Smith apples hold their shape and balance the sweet cider.",pantry:"oil, butter, salt, pepper, thyme, vinegar",batch:CURRENT_BATCH,
+  {n:"Apple cider pork chops",type:"Dinner",cuisine:"American",note:"Pork chops, apples, apple cider",baseServ:4,method:"skillet",time:"35 min",tip:"Granny Smith apples hold their shape and balance the sweet cider.",pantry:"oil, butter, salt, pepper, thyme, vinegar",batch:"2026-10-12",
     steps:["Season the chops with {x:1 tsp} salt, {x:1/2 tsp} pepper and {x:1/2 tsp} thyme or sage if you have it.", "Sear in {x:1 tbsp} oil over medium-high heat 4 minutes per side. Move to a plate.", "Lower the heat, add {x:2 tbsp} butter and the sliced apples and onion. Cook 4 minutes until starting to caramelize.", "Pour in the apple cider and {x:1 tbsp} apple cider vinegar or mustard. Simmer 4-5 minutes until the sauce is reduced by half.", "Return the chops and cook 2-3 minutes until 145°F (63°C). Spoon the apples and sauce over the top."],
     ing:[["pork_chops", 2.5], ["apples", 1], ["apple_cider", 0.5], ["butter", 0.25]]},
-  {n:"Oven BBQ pork chops with corn",type:"Dinner",cuisine:"American",note:"Pork chops, BBQ sauce, corn",baseServ:4,method:"oven",time:"40 min",tip:"Add the sauce after searing. Sugar burns if it hits a hot pan too early.",pantry:"oil, butter, paprika, garlic powder, salt",batch:CURRENT_BATCH,
+  {n:"Oven BBQ pork chops with corn",type:"Dinner",cuisine:"American",note:"Pork chops, BBQ sauce, corn",baseServ:4,method:"oven",time:"40 min",tip:"Add the sauce after searing. Sugar burns if it hits a hot pan too early.",pantry:"oil, butter, paprika, garlic powder, salt",batch:"2026-10-12",
     steps:["Heat the oven to 400°F (200°C). Season the chops with {x:1 tsp} salt, {x:1 tsp} paprika and {x:1/2 tsp} garlic powder.", "Sear the chops in an oven-safe skillet with {x:1 tbsp} oil 2 minutes per side for color.", "Brush generously with BBQ sauce and transfer to the oven. Bake 12-15 minutes until 145°F (63°C), brushing with more sauce halfway.", "Warm the corn with {x:1 tbsp} butter and a pinch of salt.", "Rest the chops 5 minutes and serve with the corn."],
     ing:[["pork_chops", 2.5], ["bbq_sauce", 1], ["canned_veg", 2]]},
-  {n:"Slow cooker pork chops & potatoes",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, onion, soup",baseServ:4,method:"slowcooker",time:"15 min + 6-7 hr",tip:"Bone-in chops are forgiving in a slow cooker. They won't dry out like boneless.",pantry:"salt, pepper, garlic powder, paprika",batch:CURRENT_BATCH,
+  {n:"Slow cooker pork chops & potatoes",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, onion, soup",baseServ:4,method:"slowcooker",time:"15 min + 6-7 hr",tip:"Bone-in chops are forgiving in a slow cooker. They won't dry out like boneless.",pantry:"salt, pepper, garlic powder, paprika",batch:"2026-10-12",
     steps:["Spread the potato chunks and sliced onion on the bottom of the slow cooker.", "Season the chops with {x:1 tsp} salt, {x:1/2 tsp} pepper, {x:1 tsp} garlic powder and {x:1/2 tsp} paprika and nestle them on top.", "Stir the soup with {x:1/4 cup} water and pour over everything.", "Cover and cook on low 6-7 hours or on high 3-4 hours, until the pork is tender and the potatoes are soft.", "Stir the sauce, adjust the salt and serve with some sauce spooned over."],
     ing:[["pork_chops", 2.5], ["yellow_potatoes", 1], ["condensed_soup", 1], ["onions", 0.33]]},
-  {n:"Sheet-pan pork chops with Brussels sprouts",type:"Dinner",cuisine:"American",note:"Pork chops, Brussels sprouts, sweet potatoes",baseServ:4,method:"oven",time:"45 min",tip:"Cut-side down is the secret to caramelized Brussels sprouts.",pantry:"oil, salt, pepper, garlic powder, paprika, honey",batch:CURRENT_BATCH,
+  {n:"Sheet-pan pork chops with Brussels sprouts",type:"Dinner",cuisine:"American",note:"Pork chops, Brussels sprouts, sweet potatoes",baseServ:4,method:"oven",time:"45 min",tip:"Cut-side down is the secret to caramelized Brussels sprouts.",pantry:"oil, salt, pepper, garlic powder, paprika, honey",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C) and put a large sheet pan inside to preheat.", "Toss the cubed sweet potatoes with {x:1 tbsp} oil, {x:1/2 tsp} salt and {x:1/2 tsp} paprika. Spread on the hot pan and roast 10 minutes.", "Toss the halved Brussels sprouts with {x:1 tbsp} oil, salt and pepper. Season the chops with {x:1 tsp} salt, {x:1/2 tsp} pepper and {x:1 tsp} garlic powder.", "Add the sprouts (cut-side down) and chops to the pan. Roast 15-18 minutes until the pork reaches 145°F (63°C) and the sprouts are charred.", "Finish with a drizzle of honey or balsamic if you like."],
     ing:[["pork_chops", 2.5], ["brussels", 2], ["sweet_potato", 1.5], ["pantrystaples", 1]]},
-  {n:"Oven BBQ back ribs with sweet potatoes",type:"Dinner",cuisine:"American",note:"Pork back ribs, BBQ sauce, sweet potatoes",baseServ:4,method:"oven",time:"3 hr (30 min hands-on)",tip:"Back ribs are leaner and quicker than spareribs. Tenderness is when the bones show 1/4 inch.",pantry:"brown sugar, paprika, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+  {n:"Oven BBQ back ribs with sweet potatoes",type:"Dinner",cuisine:"American",note:"Pork back ribs, BBQ sauce, sweet potatoes",baseServ:4,method:"oven",time:"3 hr (30 min hands-on)",tip:"Back ribs are leaner and quicker than spareribs. Tenderness is when the bones show 1/4 inch.",pantry:"brown sugar, paprika, garlic powder, salt, pepper",batch:"2026-10-12",
     steps:["Heat the oven to 300°F (150°C). Peel the thin membrane from the back of the ribs (grip with a paper towel) and pat dry.", "Mix {x:1 tbsp} brown sugar, {x:2 tsp} paprika, {x:1 tsp} garlic powder, {x:1 tsp} salt and {x:1/2 tsp} pepper and rub over both sides.", "Wrap tightly in foil, set on a sheet pan and bake 2 to 2 1/2 hours until the meat pulls back from the bones.", "Raise the oven to 425°F (220°C). Bake the sweet potatoes (pricked, on a pan) 45 minutes, then warm the corn.", "Unwrap the ribs, brush with BBQ sauce and broil 4-5 minutes until sticky and lightly charred. Rest 5 minutes and cut between the bones."],
     ing:[["pork_back_ribs", 3.5], ["bbq_sauce", 1], ["sweet_potato", 2], ["canned_veg", 2]]},
-  {n:"Honey BBQ chicken wings with veggie sticks",type:"Dinner",cuisine:"American",note:"Chicken wings, BBQ sauce, carrots, cucumber",baseServ:4,method:"oven",time:"65 min",tip:"Dry wings = crisp wings. Pat them well and don't crowd the pan.",pantry:"oil, baking powder, salt, paprika, garlic powder, honey, vinegar",batch:CURRENT_BATCH,
+  {n:"Honey BBQ chicken wings with veggie sticks",type:"Dinner",cuisine:"American",note:"Chicken wings, BBQ sauce, carrots, cucumber",baseServ:4,method:"oven",time:"65 min",tip:"Dry wings = crisp wings. Pat them well and don't crowd the pan.",pantry:"oil, baking powder, salt, paprika, garlic powder, honey, vinegar",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C). Set a rack on a foil-lined sheet pan and grease it.", "Pat the wings very dry. Toss with {x:1 tbsp} oil, {x:1 tsp} baking powder (optional, for crunch), {x:1 tsp} salt, {x:1 tsp} paprika and {x:1/2 tsp} garlic powder.", "Roast 20 minutes, flip and roast 20-25 minutes more until crisp and 175°F (80°C) inside.", "Warm the BBQ sauce with {x:2 tbsp} honey and {x:1 tsp} vinegar. Toss the hot wings in the sauce.", "Serve with carrot and cucumber sticks and a cool dip."],
     ing:[["chicken_wings", 3], ["bbq_sauce", 1], ["carrots", 1], ["cucumber", 1]]},
-  {n:"Chicken tenderloin broccoli stir-fry",type:"Dinner",cuisine:"Asian",note:"Chicken tenderloins, broccoli, soy sauce, rice",baseServ:4,method:"skillet",time:"30 min",tip:"Use the highest heat your stove allows and cook in batches. Crowding makes chicken steam.",pantry:"oil, honey, cornstarch, vinegar, garlic powder",batch:CURRENT_BATCH,
+  {n:"Chicken tenderloin broccoli stir-fry",type:"Dinner",cuisine:"Asian",note:"Chicken tenderloins, broccoli, soy sauce, rice",baseServ:4,method:"skillet",time:"30 min",tip:"Use the highest heat your stove allows and cook in batches. Crowding makes chicken steam.",pantry:"oil, honey, cornstarch, vinegar, garlic powder",batch:"2026-10-12",
     steps:["Cook the rice as directed.", "Whisk the sauce: {x:3 tbsp} soy sauce, {x:1 tbsp} honey, {x:2 tsp} cornstarch, {x:1 tsp} vinegar, {x:1/2 tsp} garlic powder and {x:1/4 cup} water.", "Slice the tenderloins into thin strips. Heat {x:1 tbsp} oil in a large skillet or wok over high heat. Stir-fry the chicken 4-5 minutes until golden; remove.", "Add {x:1 tsp} oil and the broccoli with {x:2 tbsp} water. Cover 2 minutes, then stir-fry 2 minutes more.", "Return the chicken, pour in the sauce and stir 1 minute until glossy and thick. Serve over rice."],
     ing:[["chicken_tenderloin", 1.5], ["broccoli", 2], ["soy_sauce", 0.5], ["rice", 1]]},
-  {n:"Cheesy chicken tenderloin pasta bake",type:"Dinner",cuisine:"Italian",note:"Chicken tenderloins, pasta, marinara, cheese",baseServ:4,method:"oven",time:"50 min",tip:"Stir in a splash of the pasta water if the bake looks dry before it goes in the oven.",pantry:"Italian seasoning, salt, garlic powder, oil",batch:CURRENT_BATCH,
+  {n:"Cheesy chicken tenderloin pasta bake",type:"Dinner",cuisine:"Italian",note:"Chicken tenderloins, pasta, marinara, cheese",baseServ:4,method:"oven",time:"50 min",tip:"Stir in a splash of the pasta water if the bake looks dry before it goes in the oven.",pantry:"Italian seasoning, salt, garlic powder, oil",batch:"2026-10-12",
     steps:["Heat the oven to 375°F (190°C). Boil the pasta in salted water 2 minutes less than the package says; drain.", "Cut the tenderloins into 1-inch pieces and season with {x:1 tsp} Italian seasoning, {x:1/2 tsp} salt and {x:1/2 tsp} garlic powder.", "Cook the chicken in {x:1 tbsp} oil 5-6 minutes until golden; it will finish in the oven.", "Stir together the pasta, chicken, marinara and half the cheese in a baking dish. Top with the rest of the cheese.", "Bake 18-20 minutes until bubbling. Rest 5 minutes before serving."],
     ing:[["chicken_tenderloin", 1.5], ["pasta", 1], ["marinara", 1], ["cheese", 1]]},
-  {n:"Baked chicken tenderloins with Brussels sprouts & potatoes",type:"Dinner",cuisine:"American",note:"Chicken tenderloins, Brussels sprouts, potatoes",baseServ:4,method:"oven",time:"40 min",tip:"A pre-heated pan gives the vegetables a head start on browning.",pantry:"oil, salt, pepper, paprika, garlic powder, Italian seasoning",batch:CURRENT_BATCH,
+  {n:"Baked chicken tenderloins with Brussels sprouts & potatoes",type:"Dinner",cuisine:"American",note:"Chicken tenderloins, Brussels sprouts, potatoes",baseServ:4,method:"oven",time:"40 min",tip:"A pre-heated pan gives the vegetables a head start on browning.",pantry:"oil, salt, pepper, paprika, garlic powder, Italian seasoning",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C) with a large sheet pan inside.", "Halve the potatoes and Brussels sprouts. Toss with {x:2 tbsp} oil, {x:1 tsp} salt and {x:1/2 tsp} pepper and spread on the hot pan; roast 10 minutes.", "Toss the tenderloins with {x:1 tbsp} oil, {x:1 tsp} paprika, {x:1 tsp} garlic powder, {x:1/2 tsp} Italian seasoning and {x:1/2 tsp} salt.", "Push the vegetables aside, add the chicken and roast 12-15 minutes until 165°F (74°C) and the vegetables are well browned.", "Squeeze on lemon or a splash of vinegar before serving."],
     ing:[["chicken_tenderloin", 1.5], ["brussels", 2], ["yellow_potatoes", 1], ["pantrystaples", 1]]},
-  {n:"Chicken tenderloin fajita skillet",type:"Dinner",cuisine:"Mexican",note:"Chicken tenderloins, peppers, onion, tortillas",baseServ:4,method:"skillet",time:"30 min",tip:"A hot, dry pan gives that restaurant sizzle. Don't stir constantly.",pantry:"chili powder, cumin, paprika, garlic powder, salt, oil",batch:CURRENT_BATCH,
+  {n:"Chicken tenderloin fajita skillet",type:"Dinner",cuisine:"Mexican",note:"Chicken tenderloins, peppers, onion, tortillas",baseServ:4,method:"skillet",time:"30 min",tip:"A hot, dry pan gives that restaurant sizzle. Don't stir constantly.",pantry:"chili powder, cumin, paprika, garlic powder, salt, oil",batch:"2026-10-12",
     steps:["Mix the fajita seasoning: {x:2 tsp} chili powder, {x:1 tsp} cumin, {x:1 tsp} paprika, {x:1/2 tsp} garlic powder and {x:1 tsp} salt.", "Slice the tenderloins, peppers and onion into 1/2-inch strips and toss with the seasoning and {x:1 tbsp} oil.", "Heat a large skillet over high heat. Cook the chicken in a single layer 4-5 minutes, stirring once; push aside.", "Add the peppers and onion and cook 4-5 minutes until charred at the edges but still crisp.", "Warm the tortillas and serve with salsa, sour cream and a squeeze of lime."],
     ing:[["chicken_tenderloin", 1.5], ["peppers", 1], ["onions", 0.33], ["tortillas", 1], ["salsa", 0.5], ["pantrystaples", 1]]},
-  {n:"Cheeseburger pasta skillet",type:"Dinner",cuisine:"American",note:"Ground beef, pasta, tomatoes, cheese",baseServ:4,method:"skillet",time:"30 min",tip:"Add a little more water if the pan looks dry before the pasta is tender.",pantry:"garlic powder, paprika, salt, pepper, mustard",batch:CURRENT_BATCH,
+  {n:"Cheeseburger pasta skillet",type:"Dinner",cuisine:"American",note:"Ground beef, pasta, tomatoes, cheese",baseServ:4,method:"skillet",time:"30 min",tip:"Add a little more water if the pan looks dry before the pasta is tender.",pantry:"garlic powder, paprika, salt, pepper, mustard",batch:"2026-10-12",
     steps:["Brown the ground beef with the diced onion in a large deep skillet over medium-high heat, 6-7 minutes, breaking it up. Drain excess fat.", "Stir in {x:1 tsp} garlic powder, {x:1 tsp} paprika, {x:1 tsp} salt and {x:1/2 tsp} pepper.", "Add the canned tomatoes, {x:2 cups} water and the pasta. Bring to a boil, cover and simmer 12-14 minutes, stirring now and then, until the pasta is tender and the sauce has thickened.", "Take off the heat, stir in the cheese until melted and add {x:1 tbsp} mustard or ketchup for burger flavor.", "Top with pickles and serve."],
     ing:[["ground_beef", 1], ["pasta", 1], ["canned_tomatoes", 1], ["cheese", 1], ["onions", 0.2]]},
-  {n:"Sloppy joes with corn",type:"Dinner",cuisine:"American",note:"Ground beef, marinara, buns, corn",baseServ:4,method:"skillet",time:"30 min",tip:"The brown sugar and vinegar are what make it taste like a diner sloppy joe.",pantry:"ketchup, brown sugar, vinegar, chili powder, garlic powder, salt, butter",batch:CURRENT_BATCH,
+  {n:"Sloppy joes with corn",type:"Dinner",cuisine:"American",note:"Ground beef, marinara, buns, corn",baseServ:4,method:"skillet",time:"30 min",tip:"The brown sugar and vinegar are what make it taste like a diner sloppy joe.",pantry:"ketchup, brown sugar, vinegar, chili powder, garlic powder, salt, butter",batch:"2026-10-12",
     steps:["Brown the ground beef with the diced onion over medium-high heat 6-7 minutes; drain.", "Stir in the marinara, {x:2 tbsp} ketchup, {x:1 tbsp} brown sugar, {x:1 tbsp} vinegar, {x:1 tsp} chili powder, {x:1 tsp} garlic powder and {x:1/2 tsp} salt.", "Simmer on medium-low 10 minutes, stirring, until thick enough to mound on a spoon.", "Toast the buns cut-side down in a dry pan or under the broiler.", "Warm the corn with butter and salt. Spoon the meat onto the buns and serve with the corn."],
     ing:[["ground_beef", 1], ["marinara", 0.5], ["buns", 1], ["canned_veg", 2], ["onions", 0.2]]},
-  {n:"Stuffed pepper skillet",type:"Dinner",cuisine:"American",note:"Ground beef, bell peppers, rice, tomatoes",baseServ:4,method:"skillet",time:"35 min",tip:"Chop the peppers small so they soften in the same time the sauce reduces.",pantry:"Italian seasoning, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+  {n:"Stuffed pepper skillet",type:"Dinner",cuisine:"American",note:"Ground beef, bell peppers, rice, tomatoes",baseServ:4,method:"skillet",time:"35 min",tip:"Chop the peppers small so they soften in the same time the sauce reduces.",pantry:"Italian seasoning, garlic powder, salt, pepper",batch:"2026-10-12",
     steps:["Cook the rice as directed.", "Brown the ground beef with diced onion in a large skillet 6-7 minutes; drain.", "Add the chopped peppers, canned tomatoes, {x:1 tsp} Italian seasoning, {x:1 tsp} garlic powder, {x:1 tsp} salt and {x:1/2 tsp} pepper. Cover and simmer 10-12 minutes until the peppers are soft.", "Stir in the rice and half the cheese.", "Top with the remaining cheese, cover for 2 minutes to melt, and serve."],
     ing:[["ground_beef", 1], ["peppers", 1], ["rice", 1], ["canned_tomatoes", 1], ["cheese", 0.5]]},
-  {n:"Cheesy broccoli & rice bake",type:"Dinner",cuisine:"American",note:"Broccoli, rice, cheese, soup",baseServ:4,method:"oven",time:"55 min",tip:"Add cooked chicken or ham to turn this into a full one-dish dinner.",pantry:"milk, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+  {n:"Cheesy broccoli & rice bake",type:"Dinner",cuisine:"American",note:"Broccoli, rice, cheese, soup",baseServ:4,method:"oven",time:"55 min",tip:"Add cooked chicken or ham to turn this into a full one-dish dinner.",pantry:"milk, garlic powder, salt, pepper",batch:"2026-10-12",
     steps:["Heat the oven to 375°F (190°C). Cook the rice until just tender (about 15 minutes).", "Chop the broccoli into small florets and steam or microwave 3 minutes.", "Stir the rice, broccoli, soup, {x:1/2 cup} milk, {x:1/2 tsp} garlic powder, {x:1/2 tsp} salt, {x:1/4 tsp} pepper and two-thirds of the cheese in a greased baking dish.", "Top with the remaining cheese.", "Cover with foil and bake 15 minutes, uncover and bake 10 minutes until golden and bubbly."],
     ing:[["broccoli", 2], ["rice", 1], ["cheese", 1], ["condensed_soup", 1]]},
-  {n:"Roasted sweet potato & Brussels sprout tacos",type:"Dinner",cuisine:"Mexican",note:"Sweet potatoes, Brussels sprouts, tortillas",baseServ:4,method:"oven",time:"40 min",tip:"Use two pans. Crowded vegetables steam instead of roast.",pantry:"oil, chili powder, cumin, garlic powder, salt",batch:CURRENT_BATCH,
+  {n:"Roasted sweet potato & Brussels sprout tacos",type:"Dinner",cuisine:"Mexican",note:"Sweet potatoes, Brussels sprouts, tortillas",baseServ:4,method:"oven",time:"40 min",tip:"Use two pans. Crowded vegetables steam instead of roast.",pantry:"oil, chili powder, cumin, garlic powder, salt",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C). Cut the sweet potatoes into 1/2-inch cubes and halve the Brussels sprouts.", "Toss with {x:2 tbsp} oil, {x:1 1/2 tsp} chili powder, {x:1 tsp} cumin, {x:1/2 tsp} garlic powder and {x:1 tsp} salt.", "Spread in a single layer on two sheet pans and roast 22-25 minutes, stirring once, until caramelized.", "Warm the tortillas over a flame or in a dry pan.", "Fill with the vegetables, a spoon of sour cream thinned with lime, and salsa."],
     ing:[["sweet_potato", 2], ["brussels", 1], ["tortillas", 1], ["sourcream", 0.5], ["salsa", 0.5], ["pantrystaples", 1]]},
-  {n:"Sausage & broccoli pasta",type:"Dinner",cuisine:"Italian",note:"Smoked sausage, broccoli, pasta, parmesan",baseServ:4,method:"boil",time:"25 min",tip:"Pasta water has starch that turns oil and cheese into a silky sauce.",pantry:"garlic, red pepper flakes, oil, salt",batch:CURRENT_BATCH,
+  {n:"Sausage & broccoli pasta",type:"Dinner",cuisine:"Italian",note:"Smoked sausage, broccoli, pasta, parmesan",baseServ:4,method:"boil",time:"25 min",tip:"Pasta water has starch that turns oil and cheese into a silky sauce.",pantry:"garlic, red pepper flakes, oil, salt",batch:"2026-10-12",
     steps:["Boil the pasta in well-salted water; add the broccoli florets for the last 3 minutes. Reserve 1 cup pasta water, then drain.", "Slice the sausage into rounds and brown in a large skillet over medium-high heat 4-5 minutes.", "Add {x:3 cloves} minced garlic (or {x:1 tsp} garlic powder) and {x:1/4 tsp} red pepper flakes; cook 30 seconds.", "Add the pasta, broccoli and a splash of pasta water. Toss 1 minute, adding {x:2 tbsp} oil or butter.", "Stir in the parmesan, adjust the salt and serve."],
     ing:[["sausage", 1], ["broccoli", 1], ["pasta", 1], ["parmesan", 0.25]]},
-  {n:"Beef & bean chili",type:"Dinner",cuisine:"Mexican",note:"Ground beef, chili beans, tomatoes",baseServ:4,method:"skillet",time:"50 min",tip:"Chili is better the next day. Make extra and freeze portions.",pantry:"chili powder, cumin, paprika, garlic powder, salt",batch:CURRENT_BATCH,
+  {n:"Beef & bean chili",type:"Dinner",cuisine:"Mexican",note:"Ground beef, chili beans, tomatoes",baseServ:4,method:"skillet",time:"50 min",tip:"Chili is better the next day. Make extra and freeze portions.",pantry:"chili powder, cumin, paprika, garlic powder, salt",batch:"2026-10-12",
     steps:["Brown the ground beef with the diced onion in a large pot over medium-high heat 7 minutes; drain.", "Stir in {x:2 tbsp} chili powder, {x:2 tsp} cumin, {x:1 tsp} paprika, {x:1 tsp} garlic powder and {x:1 tsp} salt. Cook 1 minute until fragrant.", "Add the canned tomatoes, the beans (with their sauce) and {x:1 cup} water.", "Bring to a simmer, reduce heat, and cook uncovered 25-30 minutes, stirring now and then, until thick.", "Season to taste and serve with cheese, sour cream and crackers or cornbread."],
     ing:[["ground_beef", 1], ["canned_beans", 3], ["canned_tomatoes", 2], ["onions", 0.33], ["pantrystaples", 1]]},
-  {n:"Teriyaki pork chops with rice & broccoli",type:"Dinner",cuisine:"Asian",note:"Pork chops, teriyaki sauce, rice, broccoli",baseServ:4,method:"skillet",time:"35 min",tip:"Let the sauce reduce uncovered 1 minute at the end for a thick glaze.",pantry:"oil, salt, pepper, garlic powder",batch:CURRENT_BATCH,
+  {n:"Teriyaki pork chops with rice & broccoli",type:"Dinner",cuisine:"Asian",note:"Pork chops, teriyaki sauce, rice, broccoli",baseServ:4,method:"skillet",time:"35 min",tip:"Let the sauce reduce uncovered 1 minute at the end for a thick glaze.",pantry:"oil, salt, pepper, garlic powder",batch:"2026-10-12",
     steps:["Cook the rice as directed.", "Season the chops with {x:1/2 tsp} salt, {x:1/2 tsp} pepper and {x:1/2 tsp} garlic powder.", "Sear in {x:1 tbsp} oil over medium-high heat 4 minutes per side until deep golden.", "Pour in the teriyaki sauce and {x:2 tbsp} water. Reduce heat, cover and simmer 4-5 minutes, turning once, until the pork reaches 145°F (63°C).", "Steam the broccoli 4 minutes. Spoon the glaze over the chops and serve over rice."],
     ing:[["pork_chops", 2.5], ["teriyaki_sauce", 0.5], ["rice", 1], ["broccoli", 1]]},
-  {n:"Korean-style pork chops with sesame broccoli",type:"Dinner",cuisine:"Asian",note:"Pork chops, soy-brown sugar marinade, rice, broccoli",baseServ:4,method:"skillet",time:"35 min + marinating",tip:"Never reuse marinade that touched raw pork without boiling it first.",pantry:"soy sauce is on your list; brown sugar, vinegar, garlic powder, ginger, oil",batch:CURRENT_BATCH,
+  {n:"Korean-style pork chops with sesame broccoli",type:"Dinner",cuisine:"Asian",note:"Pork chops, soy-brown sugar marinade, rice, broccoli",baseServ:4,method:"skillet",time:"35 min + marinating",tip:"Never reuse marinade that touched raw pork without boiling it first.",pantry:"soy sauce is on your list; brown sugar, vinegar, garlic powder, ginger, oil",batch:"2026-10-12",
     steps:["Whisk the marinade: {x:1/4 cup} soy sauce, {x:2 tbsp} brown sugar, {x:1 tbsp} vinegar, {x:1 tsp} garlic powder, {x:1/2 tsp} ginger and {x:1/4 tsp} pepper. Add the chops and marinate at least 20 minutes (up to 8 hours).", "Cook the rice as directed.", "Pat the chops dry, saving the marinade. Sear in {x:1 tbsp} oil over medium-high heat 4 minutes per side until deeply browned and 145°F (63°C).", "Boil the leftover marinade 2 minutes in a small pot until syrupy.", "Stir-fry the broccoli in {x:1 tsp} oil 4 minutes with a splash of water, toss with {x:1 tsp} sesame oil or oil. Slice the chops, drizzle with sauce and serve over rice."],
     ing:[["pork_chops", 2.5], ["soy_sauce", 0.5], ["rice", 1], ["broccoli", 2]]},
-  {n:"Cajun pork chop & potato skillet",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, corn, Cajun spices",baseServ:4,method:"skillet",time:"40 min",tip:"Skip the cayenne for mild heat. The paprika carries the color.",pantry:"paprika, garlic powder, onion powder, oregano, cayenne, salt, pepper, oil",batch:CURRENT_BATCH,
+  {n:"Cajun pork chop & potato skillet",type:"Dinner",cuisine:"American",note:"Pork chops, yellow potatoes, corn, Cajun spices",baseServ:4,method:"skillet",time:"40 min",tip:"Skip the cayenne for mild heat. The paprika carries the color.",pantry:"paprika, garlic powder, onion powder, oregano, cayenne, salt, pepper, oil",batch:"2026-10-12",
     steps:["Mix the Cajun seasoning: {x:2 tsp} paprika, {x:1 tsp} garlic powder, {x:1 tsp} onion powder, {x:1/2 tsp} oregano, {x:1/2 tsp} cayenne (optional), {x:1 tsp} salt and {x:1/2 tsp} pepper.", "Cube the potatoes and boil 6 minutes; drain. Rub half the seasoning on the chops.", "Sear the chops in {x:1 tbsp} oil in a large skillet 4 minutes per side; set aside.", "Add the potatoes, diced onion and the rest of the seasoning to the pan. Cook 8 minutes until golden, adding the corn for the last 3 minutes.", "Return the chops, cover 3 minutes until 145°F (63°C) and serve from the skillet."],
     ing:[["pork_chops", 2.5], ["yellow_potatoes", 1], ["canned_veg", 2], ["onions", 0.33]]},
-  {n:"Italian pork chops with peppers & marinara",type:"Dinner",cuisine:"Italian",note:"Pork chops, marinara, peppers, pasta",baseServ:4,method:"skillet",time:"40 min",tip:"A pinch of sugar in the sauce takes the edge off canned marinara.",pantry:"Italian seasoning, garlic, salt, pepper, oil",batch:CURRENT_BATCH,
+  {n:"Italian pork chops with peppers & marinara",type:"Dinner",cuisine:"Italian",note:"Pork chops, marinara, peppers, pasta",baseServ:4,method:"skillet",time:"40 min",tip:"A pinch of sugar in the sauce takes the edge off canned marinara.",pantry:"Italian seasoning, garlic, salt, pepper, oil",batch:"2026-10-12",
     steps:["Season the chops with {x:1 tsp} Italian seasoning, {x:1 tsp} salt and {x:1/2 tsp} pepper.", "Sear in {x:1 tbsp} oil over medium-high heat 3 minutes per side; set aside.", "Add the sliced peppers and onion to the pan and cook 5 minutes. Stir in {x:2 cloves} garlic or {x:1/2 tsp} garlic powder.", "Add the marinara and {x:1/4 cup} water, return the chops, cover and simmer 10-12 minutes until 145°F (63°C).", "Boil the pasta and serve with the chops and sauce on top."],
     ing:[["pork_chops", 2.5], ["marinara", 1], ["peppers", 1], ["pasta", 1], ["onions", 0.2]]},
-  {n:"Slow cooker beef birria-style tacos",type:"Dinner",cuisine:"Mexican",note:"Chuck roast, salsa, tortillas, cheese",baseServ:4,method:"slowcooker",time:"20 min + 8 hr",tip:"Skim a little fat from the top before serving the juice, or leave it for dipping.",pantry:"chili powder, cumin, oregano, vinegar, salt, pepper, oil",batch:CURRENT_BATCH,
+  {n:"Slow cooker beef birria-style tacos",type:"Dinner",cuisine:"Mexican",note:"Chuck roast, salsa, tortillas, cheese",baseServ:4,method:"slowcooker",time:"20 min + 8 hr",tip:"Skim a little fat from the top before serving the juice, or leave it for dipping.",pantry:"chili powder, cumin, oregano, vinegar, salt, pepper, oil",batch:"2026-10-12",
     steps:["Cut the chuck roast into 3 or 4 large pieces and season with {x:2 tsp} salt, {x:1 tsp} pepper, {x:1 tbsp} chili powder, {x:2 tsp} cumin and {x:1 tsp} oregano.", "Sear the pieces in {x:1 tbsp} oil in a hot skillet 2 minutes per side (optional but worth it).", "Place in the slow cooker with the sliced onion, the salsa, {x:1/2 cup} water and {x:2 tbsp} vinegar.", "Cover and cook on low 8-9 hours (or high 5-6) until the beef shreds with no resistance. Shred and stir it into the juices.", "Dip tortillas into the fat that floats on the juice, crisp in a skillet with cheese, fold and serve with the juice for dipping."],
     ing:[["roast_beef", 3], ["salsa", 1], ["onions", 0.5], ["tortillas", 1], ["cheese", 0.75], ["pantrystaples", 1]]},
-  {n:"Slow cooker beef stew",type:"Dinner",cuisine:"American",note:"Chuck roast, potatoes, carrots, onion",baseServ:4,method:"slowcooker",time:"25 min + 8 hr",tip:"Browning the beef first adds depth that a dump-and-go stew can't match.",pantry:"flour, oil, salt, pepper, soy sauce, thyme or Italian seasoning, cornstarch",batch:CURRENT_BATCH,
+  {n:"Slow cooker beef stew",type:"Dinner",cuisine:"American",note:"Chuck roast, potatoes, carrots, onion",baseServ:4,method:"slowcooker",time:"25 min + 8 hr",tip:"Browning the beef first adds depth that a dump-and-go stew can't match.",pantry:"flour, oil, salt, pepper, soy sauce, thyme or Italian seasoning, cornstarch",batch:"2026-10-12",
     steps:["Cut the chuck roast into 1 1/2-inch cubes. Toss with {x:3 tbsp} flour, {x:1 1/2 tsp} salt and {x:1 tsp} pepper.", "Brown the beef in {x:2 tbsp} oil in batches, 2 minutes per side, then transfer to the slow cooker.", "Add the chopped carrots, cubed potatoes, sliced onion, the canned tomatoes, {x:2 tbsp} soy sauce, {x:1 tsp} thyme or Italian seasoning and {x:2 cups} water.", "Cover and cook on low 8 hours or high 4-5 hours until the beef is fork-tender.", "Stir {x:2 tbsp} cornstarch mixed with cold water in during the last 15 minutes on high to thicken. Taste for salt."],
     ing:[["roast_beef", 2], ["yellow_potatoes", 1], ["whole_carrots", 0.75], ["onions", 0.5], ["canned_tomatoes", 1]]},
-  {n:"Taco-stuffed sweet potatoes",type:"Dinner",cuisine:"Mexican",note:"Ground beef, sweet potatoes, salsa, cheese",baseServ:4,method:"oven",time:"60 min",tip:"Microwave the potatoes 6 minutes first to shorten the oven time.",pantry:"chili powder, cumin, garlic powder, salt, oil",batch:CURRENT_BATCH,
+  {n:"Taco-stuffed sweet potatoes",type:"Dinner",cuisine:"Mexican",note:"Ground beef, sweet potatoes, salsa, cheese",baseServ:4,method:"oven",time:"60 min",tip:"Microwave the potatoes 6 minutes first to shorten the oven time.",pantry:"chili powder, cumin, garlic powder, salt, oil",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C). Prick the sweet potatoes, rub with oil and bake 45-50 minutes until soft.", "Brown the ground beef 6-7 minutes; drain.", "Stir in {x:2 tsp} chili powder, {x:1 tsp} cumin, {x:1/2 tsp} garlic powder, {x:1 tsp} salt and {x:1/4 cup} water. Simmer 4 minutes until saucy.", "Split the potatoes and fluff the insides.", "Top with the taco beef, shredded cheese, salsa and sour cream."],
     ing:[["ground_beef", 1], ["sweet_potato", 2.5], ["salsa", 0.5], ["cheese", 0.5], ["sourcream", 0.5]]},
-  {n:"Korean-style beef rice bowls",type:"Dinner",cuisine:"Asian",note:"Ground beef, soy-brown sugar sauce, rice, cucumber",baseServ:4,method:"skillet",time:"25 min",tip:"A fried egg on top turns this into a very satisfying dinner.",pantry:"brown sugar, garlic powder, ginger, vinegar, salt",batch:CURRENT_BATCH,
+  {n:"Korean-style beef rice bowls",type:"Dinner",cuisine:"Asian",note:"Ground beef, soy-brown sugar sauce, rice, cucumber",baseServ:4,method:"skillet",time:"25 min",tip:"A fried egg on top turns this into a very satisfying dinner.",pantry:"brown sugar, garlic powder, ginger, vinegar, salt",batch:"2026-10-12",
     steps:["Cook the rice as directed.", "Whisk the sauce: {x:3 tbsp} soy sauce, {x:2 tbsp} brown sugar, {x:1 tsp} garlic powder, {x:1/2 tsp} ginger, {x:1 tsp} vinegar.", "Brown the ground beef in a large skillet over medium-high heat 6-7 minutes, breaking it into small crumbles; drain extra fat.", "Pour the sauce over the beef and simmer 3 minutes until syrupy.", "Slice the cucumber, quick-pickle it in {x:1 tbsp} vinegar with a pinch of salt and sugar for 5 minutes, then serve everything over the rice."],
     ing:[["ground_beef", 1], ["soy_sauce", 0.5], ["rice", 1], ["cucumber", 1]]},
-  {n:"Baked spaghetti",type:"Dinner",cuisine:"Italian",note:"Ground beef, spaghetti, marinara, cheese",baseServ:4,method:"oven",time:"55 min",tip:"Slightly undercooked pasta absorbs sauce in the oven instead of turning mushy.",pantry:"Italian seasoning, garlic powder, salt, sugar",batch:CURRENT_BATCH,
+  {n:"Baked spaghetti",type:"Dinner",cuisine:"Italian",note:"Ground beef, spaghetti, marinara, cheese",baseServ:4,method:"oven",time:"55 min",tip:"Slightly undercooked pasta absorbs sauce in the oven instead of turning mushy.",pantry:"Italian seasoning, garlic powder, salt, sugar",batch:"2026-10-12",
     steps:["Heat the oven to 375°F (190°C). Boil the pasta 2 minutes under the package time; drain.", "Brown the ground beef with diced onion; drain. Stir in the marinara, {x:1 tsp} Italian seasoning, {x:1/2 tsp} garlic powder, {x:1/2 tsp} salt and a pinch of sugar; simmer 5 minutes.", "Toss the pasta with the sauce and half the cheese and pour into a greased 9x13 dish.", "Top with the remaining cheese.", "Cover with foil, bake 15 minutes, uncover and bake 10 minutes more until bubbly with browned edges. Rest 5 minutes."],
     ing:[["ground_beef", 1], ["pasta", 1], ["marinara", 1.5], ["cheese", 1.25], ["onions", 0.2]]},
-  {n:"Buffalo chicken tenderloin wraps",type:"Dinner",cuisine:"American",note:"Chicken tenderloins, hot sauce, lettuce, cucumber",baseServ:4,method:"skillet",time:"25 min",tip:"Start with half the hot sauce. You can always add more heat.",pantry:"butter, oil, garlic powder, paprika, salt, ranch or blue cheese dressing",batch:CURRENT_BATCH,
+  {n:"Buffalo chicken tenderloin wraps",type:"Dinner",cuisine:"American",note:"Chicken tenderloins, hot sauce, lettuce, cucumber",baseServ:4,method:"skillet",time:"25 min",tip:"Start with half the hot sauce. You can always add more heat.",pantry:"butter, oil, garlic powder, paprika, salt, ranch or blue cheese dressing",batch:"2026-10-12",
     steps:["Slice the tenderloins into strips. Season with {x:1/2 tsp} salt, {x:1/2 tsp} garlic powder and {x:1/2 tsp} paprika.", "Cook in {x:1 tbsp} oil over medium-high heat 6-7 minutes until golden and 165°F (74°C).", "Melt {x:2 tbsp} butter with the hot sauce (about {x:1/4 cup}), toss the chicken in it and cook 1 minute.", "Warm the tortillas. Fill with chicken, shredded lettuce, cucumber sticks and cheese.", "Drizzle with ranch or blue cheese dressing and roll up."],
     ing:[["chicken_tenderloin", 1.5], ["hot_sauce", 0.25], ["tortillas", 1], ["lettuce", 0.5], ["cucumber", 1], ["cheese", 0.5]]},
-  {n:"Peanut noodle chicken stir-fry",type:"Dinner",cuisine:"Asian",note:"Chicken tenderloins, noodles, broccoli, peanut sauce",baseServ:4,method:"skillet",time:"30 min",tip:"Thin the sauce with hot water a spoonful at a time. Peanut butter thickens as it cools.",pantry:"oil, vinegar, honey, garlic powder",batch:CURRENT_BATCH,
+  {n:"Peanut noodle chicken stir-fry",type:"Dinner",cuisine:"Asian",note:"Chicken tenderloins, noodles, broccoli, peanut sauce",baseServ:4,method:"skillet",time:"30 min",tip:"Thin the sauce with hot water a spoonful at a time. Peanut butter thickens as it cools.",pantry:"oil, vinegar, honey, garlic powder",batch:"2026-10-12",
     steps:["Cook the noodles per the package; drain and toss with a drizzle of oil.", "Whisk the sauce: {x:3 tbsp} peanut butter, {x:3 tbsp} soy sauce, {x:1 tbsp} vinegar, {x:1 tbsp} honey or brown sugar, {x:1/2 tsp} garlic powder and {x:1/4 cup} hot water until smooth.", "Slice the chicken thin and stir-fry in {x:1 tbsp} oil over high heat 4-5 minutes; remove.", "Stir-fry the broccoli with a splash of water 3-4 minutes.", "Return the chicken, add the noodles and sauce and toss 1-2 minutes until coated. Top with sliced cucumber."],
     ing:[["chicken_tenderloin", 1.5], ["noodles", 1], ["broccoli", 2], ["peanut_butter", 0.4], ["soy_sauce", 0.5]]},
-  {n:"Chicken souvlaki-style plates",type:"Dinner",cuisine:"Mediterranean",note:"Chicken tenderloins, cucumber-tomato salad, pita",baseServ:4,method:"oven",time:"35 min + marinating",tip:"Soak wooden skewers 20 minutes so they don't burn.",pantry:"oil, vinegar, oregano, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+  {n:"Chicken souvlaki-style plates",type:"Dinner",cuisine:"Mediterranean",note:"Chicken tenderloins, cucumber-tomato salad, pita",baseServ:4,method:"oven",time:"35 min + marinating",tip:"Soak wooden skewers 20 minutes so they don't burn.",pantry:"oil, vinegar, oregano, garlic powder, salt, pepper",batch:"2026-10-12",
     steps:["Marinate the chicken: {x:3 tbsp} oil, {x:2 tbsp} vinegar or lemon juice, {x:1 tsp} oregano, {x:1 tsp} garlic powder, {x:1 tsp} salt and {x:1/2 tsp} pepper, at least 20 minutes.", "Heat the broiler to high (or a grill pan to medium-high). Thread the chicken on skewers, or lay it on a foil-lined pan.", "Broil 4 inches from the heat, 5 minutes per side, until browned and 165°F (74°C).", "Toss diced cucumber, tomato, a few olives and the feta with {x:1 tbsp} oil, {x:1 tsp} vinegar and a pinch of oregano.", "Warm the pita and serve the chicken with the salad and a spoon of yogurt or hummus."],
     ing:[["chicken_tenderloin", 1.5], ["pita_bread", 1], ["cucumber", 1], ["tomato", 1], ["feta_cheese", 0.5], ["olives", 0.5]]},
-  {n:"One-pot arroz con pollo",type:"Dinner",cuisine:"Mexican",note:"Chicken tenderloins, rice, peppers, tomatoes",baseServ:4,method:"skillet",time:"45 min",tip:"Toasting the dry rice for a minute keeps the grains separate.",pantry:"oil, cumin, paprika, garlic powder, salt",batch:CURRENT_BATCH,
+  {n:"One-pot arroz con pollo",type:"Dinner",cuisine:"Mexican",note:"Chicken tenderloins, rice, peppers, tomatoes",baseServ:4,method:"skillet",time:"45 min",tip:"Toasting the dry rice for a minute keeps the grains separate.",pantry:"oil, cumin, paprika, garlic powder, salt",batch:"2026-10-12",
     steps:["Cut the chicken into chunks and season with {x:1 tsp} salt, {x:1 tsp} cumin, {x:1 tsp} paprika and {x:1/2 tsp} garlic powder.", "Brown in {x:1 tbsp} oil in a deep skillet or Dutch oven 4 minutes; remove.", "Cook the diced onion and pepper 4 minutes, then stir in the rice and toast 1 minute.", "Add the canned tomatoes and {x:2 cups} water. Return the chicken and bring to a boil.", "Cover and simmer on very low 18-20 minutes without lifting the lid. Rest 5 minutes covered, then fluff."],
     ing:[["chicken_tenderloin", 1.5], ["rice", 1], ["peppers", 1], ["canned_tomatoes", 1], ["onions", 0.33], ["pantrystaples", 1]]},
-  {n:"Garlic parmesan wings with roasted broccoli",type:"Dinner",cuisine:"American",note:"Chicken wings, parmesan, garlic, broccoli",baseServ:4,method:"oven",time:"60 min",tip:"Sprinkle the parmesan on while the wings are hot so it clings.",pantry:"oil, baking powder, salt, pepper, garlic powder, Italian seasoning, butter",batch:CURRENT_BATCH,
+  {n:"Garlic parmesan wings with roasted broccoli",type:"Dinner",cuisine:"American",note:"Chicken wings, parmesan, garlic, broccoli",baseServ:4,method:"oven",time:"60 min",tip:"Sprinkle the parmesan on while the wings are hot so it clings.",pantry:"oil, baking powder, salt, pepper, garlic powder, Italian seasoning, butter",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C). Set a greased rack on a foil-lined sheet pan.", "Pat the wings very dry. Toss with {x:1 tbsp} oil, {x:1 tsp} baking powder (optional), {x:1 tsp} salt and {x:1/2 tsp} pepper.", "Roast 40-45 minutes, flipping once, until deep golden and crisp.", "Melt {x:3 tbsp} butter with {x:1 1/2 tsp} garlic powder and {x:1 tsp} Italian seasoning. Toss in the hot wings, then sprinkle with the parmesan.", "Roast the broccoli on a second pan with oil and salt for the last 15 minutes."],
     ing:[["chicken_wings", 3], ["parmesan", 0.5], ["broccoli", 2], ["butter", 0.25]]},
-  {n:"Soy-ginger wings with rice & cucumber salad",type:"Dinner",cuisine:"Asian",note:"Chicken wings, soy sauce, rice, cucumber",baseServ:4,method:"oven",time:"65 min",tip:"The cornstarch gives the glaze a lacquered finish.",pantry:"oil, honey, ginger, garlic powder, cornstarch, vinegar, salt, pepper",batch:CURRENT_BATCH,
+  {n:"Soy-ginger wings with rice & cucumber salad",type:"Dinner",cuisine:"Asian",note:"Chicken wings, soy sauce, rice, cucumber",baseServ:4,method:"oven",time:"65 min",tip:"The cornstarch gives the glaze a lacquered finish.",pantry:"oil, honey, ginger, garlic powder, cornstarch, vinegar, salt, pepper",batch:"2026-10-12",
     steps:["Heat the oven to 425°F (220°C). Pat the wings dry and toss with {x:1 tbsp} oil, {x:1 tsp} salt and {x:1/2 tsp} pepper. Roast on a rack 40-45 minutes, flipping once.", "Simmer the glaze: {x:1/4 cup} soy sauce, {x:3 tbsp} honey or brown sugar, {x:1 tsp} ginger, {x:1/2 tsp} garlic powder and {x:2 tsp} cornstarch in {x:1/4 cup} water for 3 minutes until thick.", "Toss the hot wings in the glaze and broil 2 minutes until sticky.", "Cook the rice as directed.", "Slice the cucumber and toss with {x:1 tbsp} vinegar, {x:1 tsp} soy sauce, a pinch of sugar and salt; chill while the wings cook."],
     ing:[["chicken_wings", 3], ["soy_sauce", 0.5], ["rice", 1], ["cucumber", 2]]},
-  {n:"Bacon broccoli cheddar pasta",type:"Dinner",cuisine:"American",note:"Bacon, broccoli, pasta, cheese",baseServ:4,method:"boil",time:"30 min",tip:"Take the pan off the heat before adding cheese so it melts smooth instead of clumping.",pantry:"butter, garlic powder, salt, pepper",batch:CURRENT_BATCH,
+  {n:"Bacon broccoli cheddar pasta",type:"Dinner",cuisine:"American",note:"Bacon, broccoli, pasta, cheese",baseServ:4,method:"boil",time:"30 min",tip:"Take the pan off the heat before adding cheese so it melts smooth instead of clumping.",pantry:"butter, garlic powder, salt, pepper",batch:"2026-10-12",
     steps:["Cook the bacon in a large skillet over medium heat until crisp, 8-10 minutes. Crumble and pour off all but {x:2 tbsp} fat.", "Boil the pasta in salted water, adding the broccoli florets for the last 3 minutes. Reserve 1 cup pasta water; drain.", "Add {x:2 tbsp} butter and {x:1/2 tsp} garlic powder to the skillet over low heat. Add the pasta and broccoli.", "Stir in the cheese and {x:1/4 cup} pasta water until creamy; add more water as needed.", "Fold in most of the bacon and season with salt and pepper. Top with the rest."],
     ing:[["bacon", 1], ["broccoli", 2], ["pasta", 1], ["cheese", 1.25], ["butter", 0.25]]},
-  {n:"Cajun sausage & rice skillet",type:"Dinner",cuisine:"American",note:"Smoked sausage, rice, peppers, tomatoes",baseServ:4,method:"skillet",time:"40 min",tip:"Add a can of drained beans for extra protein and to stretch the pan.",pantry:"paprika, garlic powder, oregano, cayenne, salt",batch:CURRENT_BATCH,
+  {n:"Cajun sausage & rice skillet",type:"Dinner",cuisine:"American",note:"Smoked sausage, rice, peppers, tomatoes",baseServ:4,method:"skillet",time:"40 min",tip:"Add a can of drained beans for extra protein and to stretch the pan.",pantry:"paprika, garlic powder, oregano, cayenne, salt",batch:"2026-10-12",
     steps:["Slice the sausage into coins and brown in a large skillet over medium-high heat 5 minutes; remove.", "Cook the diced onion and peppers in the drippings 5 minutes. Stir in {x:2 tsp} paprika, {x:1 tsp} garlic powder, {x:1 tsp} oregano, {x:1/2 tsp} cayenne (optional), {x:1 tsp} salt and the rice; toast 1 minute.", "Add the canned tomatoes and {x:2 cups} water. Return the sausage and bring to a boil.", "Cover and simmer on low 18-20 minutes until the rice is tender.", "Fluff with a fork and serve."],
     ing:[["sausage", 1], ["rice", 1], ["peppers", 1], ["canned_tomatoes", 1], ["onions", 0.33], ["pantrystaples", 1]]},
-  {n:"Cheesy potato & broccoli soup",type:"Dinner",cuisine:"American",note:"Potatoes, broccoli, cheese, milk",baseServ:4,method:"skillet",time:"40 min",tip:"Mashing a few potatoes makes it creamy without adding cream.",pantry:"butter, flour, salt, pepper, garlic powder",batch:CURRENT_BATCH,
+  {n:"Cheesy potato & broccoli soup",type:"Dinner",cuisine:"American",note:"Potatoes, broccoli, cheese, milk",baseServ:4,method:"skillet",time:"40 min",tip:"Mashing a few potatoes makes it creamy without adding cream.",pantry:"butter, flour, salt, pepper, garlic powder",batch:"2026-10-12",
     steps:["Peel (or scrub) the potatoes and cut into 1/2-inch cubes. Dice the onion.", "Melt {x:2 tbsp} butter in a large pot, cook the onion 4 minutes, stir in {x:2 tbsp} flour and cook 1 minute.", "Add {x:3 cups} water, the potatoes, {x:1 tsp} salt, {x:1/2 tsp} pepper and {x:1/2 tsp} garlic powder. Simmer 12 minutes until the potatoes are tender.", "Add the chopped broccoli and cook 5 minutes. Mash some of the potatoes against the side of the pot to thicken.", "Stir in the milk and cheese over low heat until melted. Do not boil."],
     ing:[["yellow_potatoes", 1], ["broccoli", 1], ["cheese", 1.5], ["milk", 0.5], ["onions", 0.33]]},
-  {n:"Vegetarian chili mac",type:"Dinner",cuisine:"American",note:"Pasta, beans, tomatoes, corn, cheese",baseServ:4,method:"skillet",time:"35 min",tip:"The pasta cooks right in the sauce, so only one pan to wash.",pantry:"oil, chili powder, cumin, paprika, salt",batch:CURRENT_BATCH,
+  {n:"Vegetarian chili mac",type:"Dinner",cuisine:"American",note:"Pasta, beans, tomatoes, corn, cheese",baseServ:4,method:"skillet",time:"35 min",tip:"The pasta cooks right in the sauce, so only one pan to wash.",pantry:"oil, chili powder, cumin, paprika, salt",batch:"2026-10-12",
     steps:["Dice the onion and sauté in {x:1 tbsp} oil in a deep skillet 4 minutes.", "Stir in {x:1 tbsp} chili powder, {x:2 tsp} cumin, {x:1 tsp} paprika and {x:1 tsp} salt for 30 seconds.", "Add the canned tomatoes, drained beans, corn, pasta and {x:2 cups} water. Bring to a boil.", "Cover and simmer 12-14 minutes, stirring, until the pasta is tender and the sauce is thick.", "Stir in the cheese and serve with sour cream."],
     ing:[["pasta", 1], ["canned_beans", 2], ["canned_tomatoes", 2], ["canned_veg", 1], ["cheese", 0.75], ["onions", 0.33], ["pantrystaples", 1]]},
-  {n:"Chickpea & potato curry with rice",type:"Dinner",cuisine:"Indian",note:"Chickpeas, potatoes, tomatoes, curry spices",baseServ:4,method:"skillet",time:"40 min",tip:"Bloom the spices in the hot oil first. It makes them taste far deeper.",pantry:"oil, garlic, ginger, curry powder, turmeric, salt",batch:CURRENT_BATCH,
+  {n:"Chickpea & potato curry with rice",type:"Dinner",cuisine:"Indian",note:"Chickpeas, potatoes, tomatoes, curry spices",baseServ:4,method:"skillet",time:"40 min",tip:"Bloom the spices in the hot oil first. It makes them taste far deeper.",pantry:"oil, garlic, ginger, curry powder, turmeric, salt",batch:"2026-10-12",
     steps:["Cook the rice as directed. Cube the potatoes into 1/2-inch pieces.", "Heat {x:2 tbsp} oil in a deep skillet. Cook the diced onion 5 minutes, then add {x:3 cloves} garlic (or {x:1 tsp} garlic powder) and {x:1 tsp} ginger; cook 30 seconds.", "Stir in {x:2 tsp} curry powder (or {x:1 tsp} cumin + {x:1 tsp} paprika), {x:1/2 tsp} turmeric if you have it, and {x:1 tsp} salt for 30 seconds.", "Add the potatoes, the canned tomatoes and {x:1 cup} water. Simmer covered 12 minutes, then add the drained chickpeas and cook 8-10 minutes until the potatoes are tender.", "Mash a few chickpeas to thicken, check the salt and serve over rice with a spoon of yogurt."],
     ing:[["chickpeas", 2], ["yellow_potatoes", 1], ["canned_tomatoes", 2], ["rice", 1], ["onions", 0.33], ["yogurt", 1]]},
-  {n:"Chicken tikka-style tenderloins with cucumber raita",type:"Dinner",cuisine:"Indian",note:"Chicken tenderloins, yogurt marinade, rice, cucumber",baseServ:4,method:"oven",time:"40 min + marinating",tip:"Yogurt tenderizes the chicken. Even 30 minutes in the marinade makes a difference.",pantry:"oil, paprika, cumin, garlic powder, ginger, cayenne, salt",batch:CURRENT_BATCH,
+  {n:"Chicken tikka-style tenderloins with cucumber raita",type:"Dinner",cuisine:"Indian",note:"Chicken tenderloins, yogurt marinade, rice, cucumber",baseServ:4,method:"oven",time:"40 min + marinating",tip:"Yogurt tenderizes the chicken. Even 30 minutes in the marinade makes a difference.",pantry:"oil, paprika, cumin, garlic powder, ginger, cayenne, salt",batch:"2026-10-12",
     steps:["Mix the marinade: {x:1/2 cup} yogurt (about 2 cups), {x:1 tbsp} oil, {x:2 tsp} paprika, {x:1 tsp} cumin, {x:1 tsp} garlic powder, {x:1/2 tsp} ginger, {x:1 tsp} salt and a pinch of cayenne. Coat the chicken and marinate 30 minutes to overnight.", "Cook the rice as directed.", "Heat the oven to 450°F (230°C). Arrange the chicken on a foil-lined, greased sheet pan, shaking off excess marinade.", "Roast 12-14 minutes until browned at the edges and 165°F (74°C); broil 1-2 minutes for char.", "For the raita: stir the grated cucumber into the remaining yogurt with a pinch of salt and cumin. Serve the chicken over rice with the raita."],
     ing:[["chicken_tenderloin", 1.5], ["yogurt", 3], ["rice", 1], ["cucumber", 1]]},
+  // ---- Oct 14 batch: 10 breakfast, 10 lunch, 40 dinner ----
+  {n:"Sausage, pepper & egg scramble",type:"Breakfast",cuisine:"Breakfast",note:"Smoked sausage, peppers, eggs, toast",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Pull the eggs off the heat while they still look a little wet; they keep cooking on the plate.",pantry:"salt, pepper, oil",batch:"2026-10-14",
+    steps:["Slice the sausage into coins and the peppers and onion into thin strips.",
+      "Brown the sausage in a dry skillet over medium heat, 4-5 minutes, then add the peppers and onion and cook 4 minutes more.",
+      "Whisk the eggs with {x:1/4 tsp} salt and {x:1/8 tsp} pepper. Pour them over the vegetables.",
+      "Stir gently over medium-low heat until the eggs are just set, 2-3 minutes. Sprinkle with cheese.",
+      "Toast the bread and serve the scramble on top."],
+    ing:[["sausage",1],["peppers",0.5],["onions",0.25],["eggs",0.33],["cheese",0.25],["bread",0.5]]},
+  {n:"Apple cinnamon oatmeal bowls",type:"Breakfast",cuisine:"Breakfast",note:"Oats, apples, milk, yogurt",baseServ:4,quick:true,method:"boil",time:"15 min",tip:"Cook the oats in half milk and half water for a creamier bowl without the extra cream.",pantry:"cinnamon, honey or syrup, salt",batch:"2026-10-14",
+    steps:["Dice the apple into small cubes.",
+      "Bring {x:2 cup} water and the milk to a simmer in a saucepan. Stir in the oats and cook 5 minutes, stirring, until thick.",
+      "Stir in the diced apple and cook 2 more minutes. Add {x:1/2 tsp} cinnamon.",
+      "Divide among bowls and top with a spoon of yogurt and a drizzle of honey or syrup."],
+    ing:[["oats",1],["milk",0.5],["apples",0.5],["yogurt",2]]},
+  {n:"Layered yogurt, grape & granola cups",type:"Breakfast",cuisine:"Breakfast",note:"Yogurt, grapes, granola",baseServ:4,quick:true,method:"assembly",time:"10 min",tip:"Pack the granola in a separate bag for lunches so it stays crunchy.",pantry:"honey (optional), cinnamon",batch:"2026-10-14",
+    steps:["Wash and halve the grapes.",
+      "Spoon a layer of yogurt into each glass or bowl.",
+      "Add a layer of grapes, then a sprinkle of granola.",
+      "Repeat once more and finish with a last spoon of granola. Serve right away so the granola stays crunchy."],
+    ing:[["yogurt",4],["grapes",0.5],["granola",1]]},
+  {n:"Chorizo-style turkey breakfast tacos",type:"Breakfast",cuisine:"Mexican",note:"Ground turkey, eggs, tortillas, cheese",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Add a splash of vinegar to the turkey for a tangy, chorizo-like flavor.",pantry:"chili powder, cumin, paprika, garlic powder, salt",batch:"2026-10-14",
+    steps:["Mix {x:1 tsp} chili powder, {x:1/2 tsp} cumin, {x:1/2 tsp} paprika, {x:1/2 tsp} salt and {x:1/4 tsp} garlic powder.",
+      "Brown the ground turkey in a skillet over medium-high heat, breaking it up, 6-7 minutes. Stir in the spice mix and onion and cook 2 minutes.",
+      "Push the turkey to the side and scramble the eggs in the empty space until just set. Mix everything together.",
+      "Warm the tortillas in a dry pan, 20 seconds per side. Fill with the mixture, cheese and salsa."],
+    ing:[["ground_turkey",1],["eggs",0.33],["tortillas",1],["cheese",0.5],["salsa",0.5],["onions",0.25]]},
+  {n:"Sweet potato hash with eggs",type:"Breakfast",cuisine:"Breakfast",note:"Sweet potato, peppers, onion, eggs",baseServ:4,method:"skillet",time:"30 min",tip:"Cover the pan for the last few minutes so the egg tops set without flipping.",pantry:"oil, salt, pepper, paprika",batch:"2026-10-14",
+    steps:["Cut the sweet potato into half-inch cubes. Dice the pepper and onion.",
+      "Heat {x:2 tbsp} oil in a large skillet over medium-high heat. Add the potato and cook 10 minutes, turning, until golden and tender.",
+      "Add the pepper and onion and cook 4 minutes more. Season with {x:1/2 tsp} salt, {x:1/4 tsp} pepper and {x:1/2 tsp} paprika.",
+      "Make small wells in the hash, crack an egg into each (about 4 per pan), cover and cook 4-5 minutes until the whites are set."],
+    ing:[["sweet_potato",1.5],["peppers",0.5],["onions",0.33],["eggs",0.33]]},
+  {n:"Bacon, egg & cheese muffin sandwiches",type:"Breakfast",cuisine:"Breakfast",note:"Bacon, English muffins, eggs, cheese",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Wrap finished sandwiches in foil and they travel well for school or work.",pantry:"salt, butter (optional)",batch:"2026-10-14",
+    steps:["Cook the bacon in a skillet over medium heat until crisp, 8-10 minutes. Drain and set aside.",
+      "Split and toast the English muffins.",
+      "Whisk the eggs with {x:1/4 tsp} salt. Pour into a greased skillet and cook over medium-low, folding gently, until just set, about 2 minutes.",
+      "Layer egg, a slice of cheese and the bacon on each muffin bottom. Add the top and serve warm."],
+    ing:[["bacon",0.5],["english_muffins",1],["eggs",0.33],["cheese",0.25]]},
+  {n:"Open-faced PB banana toasts with cinnamon",type:"Breakfast",cuisine:"Breakfast",note:"Bread, peanut butter, bananas",baseServ:4,quick:true,method:"assembly",time:"5 min",tip:"Use whole-grain bread and it counts as a filling breakfast with protein.",pantry:"cinnamon, honey (optional)",batch:"2026-10-14",
+    steps:["Toast the bread slices until golden.",
+      "Spread each slice with peanut butter while the toast is still warm.",
+      "Slice the bananas into coins and arrange them on top.",
+      "Sprinkle with cinnamon and serve, or cut in half for the kids."],
+    ing:[["bread",0.5],["peanut_butter",0.5],["bananas",1.5]]},
+  {n:"Sausage & egg breakfast quesadillas",type:"Breakfast",cuisine:"Breakfast",note:"Sausage, eggs, tortillas, cheese, salsa",baseServ:4,method:"skillet",time:"20 min",tip:"Keep the heat medium so the tortillas brown before the cheese runs out.",pantry:"salt, cooking spray",batch:"2026-10-14",
+    steps:["Slice the breakfast sausage into small pieces and brown in a skillet over medium heat, 5-6 minutes.",
+      "Whisk the eggs with {x:1/4 tsp} salt and pour over the sausage. Scramble until just set.",
+      "Lay a tortilla in a dry skillet, spoon on the egg mixture and cheese, and top with a second tortilla.",
+      "Cook 2 minutes per side until golden and the cheese melts. Cut into wedges and serve with salsa."],
+    ing:[["breakfast_sausage",1],["eggs",0.33],["tortillas",1],["cheese",0.5],["salsa",0.5]]},
+  {n:"Frittata with potatoes and peppers",type:"Breakfast",cuisine:"Breakfast",note:"Eggs, yellow potatoes, peppers, cheese",baseServ:4,method:"oven",time:"35 min",tip:"Use an oven-safe skillet or wrap the handle in foil to keep it from burning.",pantry:"oil, salt, pepper",batch:"2026-10-14",
+    steps:["Preheat the oven to 400°F (200°C).",
+      "Dice the potatoes into half-inch cubes and cook in an oiled oven-safe skillet over medium heat with the pepper and onion, 10 minutes, until tender.",
+      "Whisk the eggs with {x:1/2 tsp} salt, {x:1/4 tsp} pepper and the cheese. Pour over the vegetables.",
+      "Cook on the stove 2 minutes, then bake 12-15 minutes until set in the center. Cool 5 minutes, then slice."],
+    ing:[["eggs",0.5],["yellow_potatoes",0.5],["peppers",0.5],["onions",0.25],["cheese",0.5]]},
+  {n:"Apple pancake muffins with yogurt",type:"Breakfast",cuisine:"Breakfast",note:"Pancake mix, yogurt, apples",baseServ:4,method:"oven",time:"25 min",tip:"Freeze extra muffins and reheat in the microwave for 20 seconds.",pantry:"water, cinnamon",batch:"2026-10-14",
+    steps:["Preheat the oven to 375°F (190°C). Grease a 12-cup muffin tin.",
+      "Mix {x:2 cup} pancake mix with {x:1 cup} yogurt, {x:1 tbsp} syrup and enough water to make a thick batter.",
+      "Dice the apple small and fold into the batter. Spoon into the muffin cups, filling two-thirds full.",
+      "Bake 16-18 minutes until a toothpick comes out clean. Serve warm with a spoon of yogurt."],
+    ing:[["pancake_mix",1],["yogurt",2],["apples",0.5],["syrup",0.25]]},
+  {n:"Chicken salad wraps with grapes",type:"Lunch",cuisine:"Lunch",note:"Chicken breast, grapes, yogurt, tortillas",baseServ:4,method:"boil",time:"25 min",tip:"Keep the wraps wrapped in foil and chill; they stay fresh until lunch.",pantry:"salt, pepper",batch:"2026-10-14",
+    steps:["Put the chicken in a pot, cover with water, add a pinch of salt and simmer 15 minutes until cooked through. Cool and shred.",
+      "Halve the grapes. Stir the chicken with {x:1/3 cup} plain yogurt, {x:1 tbsp} mayo, {x:1/4 tsp} salt and {x:1/4 tsp} pepper.",
+      "Fold in the grapes.",
+      "Lay a tortilla flat, add lettuce and a scoop of chicken salad, then roll up tightly. Cut in half."],
+    ing:[["chicken_breast",1.25],["grapes",0.5],["yogurt",1],["mayo",0.25],["tortillas",1],["lettuce",0.5]]},
+  {n:"Pork tenderloin sandwiches with apple slaw",type:"Lunch",cuisine:"American",note:"Pork tenderloin, buns, apples, carrots",baseServ:4,method:"oven",time:"35 min",tip:"Let the pork rest before slicing so the juices stay inside.",pantry:"salt, pepper, vinegar",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Pat the tenderloin dry and rub with {x:1 tsp} salt and {x:1/2 tsp} pepper.",
+      "Roast on a foil-lined sheet pan 20-25 minutes until it reaches 145°F (63°C). Rest 5 minutes, then slice thin.",
+      "Shred the apple and carrots and toss with {x:1 tbsp} mayo, {x:1 tsp} vinegar and a pinch of salt for a quick slaw.",
+      "Toast the buns and pile the sliced pork and slaw on top."],
+    ing:[["pork_tenderloin",1],["buns",1],["apples",0.5],["carrots",0.5],["mayo",0.25]]},
+  {n:"Chicken tenderloin Caesar wraps",type:"Lunch",cuisine:"Lunch",note:"Chicken tenderloins, salad kit, tortillas, parmesan",baseServ:4,method:"skillet",time:"20 min",tip:"Warm the tortillas first so they do not tear when rolled.",pantry:"oil, salt, pepper",batch:"2026-10-14",
+    steps:["Season the tenderloins with {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Cook in an oiled skillet over medium-high heat 4-5 minutes per side until no longer pink in the center. Slice.",
+      "Toss the salad kit with the dressing packet and a sprinkle of parmesan.",
+      "Lay the tortillas flat, add salad and chicken, roll up and cut in half."],
+    ing:[["chicken_tenderloin",1],["saladkit",1],["tortillas",1],["parmesan",0.25]]},
+  {n:"Homestyle chicken noodle soup",type:"Lunch",cuisine:"American",note:"Chicken thighs, noodles, carrots, celery",baseServ:4,method:"boil",time:"45 min",tip:"Make a double batch and freeze half for the next week.",pantry:"salt, pepper, bay leaf (optional)",batch:"2026-10-14",
+    steps:["Put the chicken thighs in a pot with {x:8 cup} water and {x:1 tsp} salt. Bring to a boil, then simmer 25 minutes.",
+      "Lift out the chicken, cool slightly, and shred it with two forks. Skim any foam from the broth.",
+      "Add the sliced carrots, celery and onion to the broth and simmer 10 minutes.",
+      "Add the noodles and cook 8 minutes until tender. Return the chicken and season with salt and pepper."],
+    ing:[["chicken_thighs",1.5],["noodles",1],["carrots",0.5],["celery",2],["onions",0.33]]},
+  {n:"Italian pasta salad with cucumber and olives",type:"Lunch",cuisine:"Italian",note:"Pasta, cherry tomatoes, cucumber, olives",baseServ:4,method:"boil",time:"20 min",tip:"Dress the pasta while it is still slightly warm so it soaks up more flavor.",pantry:"olive oil, vinegar, dried oregano, salt",batch:"2026-10-14",
+    steps:["Cook the pasta in salted water until al dente, about 9 minutes. Drain and rinse cold.",
+      "Halve the cherry tomatoes, dice the cucumber and slice the olives.",
+      "Whisk {x:3 tbsp} olive oil, {x:1 tbsp} vinegar, {x:1/2 tsp} salt and {x:1/2 tsp} dried oregano.",
+      "Toss everything with the pasta and cubed cheese. Chill 30 minutes before serving."],
+    ing:[["pasta",1],["cherry_tomatoes",1],["cucumber",1],["olives",0.5],["cheese",0.5]]},
+  {n:"Sausage & pepper hoagies",type:"Lunch",cuisine:"Italian",note:"Smoked sausage, peppers, onions, buns",baseServ:4,method:"skillet",time:"25 min",tip:"Roast the peppers ahead on a sheet pan for a sweeter, deeper flavor.",pantry:"oil, salt, pepper",batch:"2026-10-14",
+    steps:["Split the sausage lengthwise and cut each piece in half.",
+      "Brown the sausage in a skillet over medium heat 5 minutes. Add the sliced peppers and onion and cook 8 minutes until soft.",
+      "Stir in {x:1/2 cup} marinara and simmer 3 minutes.",
+      "Toast the buns, spoon in the sausage mix and top with a slice of cheese."],
+    ing:[["sausage",1],["peppers",1],["onions",0.5],["buns",1],["marinara",0.5],["cheese",0.5]]},
+  {n:"Taco salad bowls",type:"Lunch",cuisine:"Mexican",note:"Ground beef, tortilla chips, lettuce, salsa, beans",baseServ:4,method:"skillet",time:"20 min",tip:"Keep the chips separate until serving so they stay crisp.",pantry:"chili powder, cumin, salt",batch:"2026-10-14",
+    steps:["Brown the ground beef in a skillet over medium-high heat 6-7 minutes. Drain off the fat.",
+      "Stir in {x:1 tbsp} chili powder, {x:1/2 tsp} cumin, {x:1/2 tsp} salt and the drained beans. Heat 3 minutes.",
+      "Shred the lettuce and divide among bowls. Crush a handful of chips over each.",
+      "Top with the beef mixture, cheese, salsa and a spoon of yogurt or sour cream."],
+    ing:[["ground_beef",1],["lettuce",0.5],["chips",0.5],["canned_beans",1],["salsa",0.5],["cheese",0.5],["yogurt",1]]},
+  {n:"Bacon BLT pasta salad",type:"Lunch",cuisine:"American",note:"Bacon, pasta, cherry tomatoes, lettuce",baseServ:4,method:"boil",time:"25 min",tip:"Add the lettuce just before packing so it stays crisp.",pantry:"vinegar, salt, pepper",batch:"2026-10-14",
+    steps:["Cook the pasta until al dente and rinse cold. Cook the bacon until crisp and crumble it.",
+      "Halve the cherry tomatoes and chop the lettuce into bite-size pieces.",
+      "Stir {x:3 tbsp} mayo, {x:1 tbsp} vinegar and {x:1/2 tsp} pepper together for the dressing.",
+      "Toss the pasta, bacon, tomatoes and lettuce with the dressing. Chill until lunch."],
+    ing:[["bacon",0.5],["pasta",1],["cherry_tomatoes",1],["lettuce",0.5],["mayo",0.25]]},
+  {n:"Mediterranean chickpea wraps",type:"Lunch",cuisine:"Mediterranean",note:"Chickpeas, hummus, cucumber, feta, tortillas",baseServ:4,quick:true,method:"assembly",time:"15 min",tip:"Roll tight and wrap in foil so the filling stays inside.",pantry:"olive oil, salt, pepper, dried oregano",batch:"2026-10-14",
+    steps:["Drain and rinse the chickpeas. Mash half of them lightly with a fork.",
+      "Dice the cucumber and tomato. Crumble the feta.",
+      "Spread each tortilla with a spoon of hummus, then add the mashed and whole chickpeas, cucumber, tomato and feta.",
+      "Drizzle with {x:1 tsp} olive oil, roll up tightly and cut in half."],
+    ing:[["chickpeas",2],["hummus",0.5],["cucumber",1],["tomato",0.5],["feta_cheese",0.5],["tortillas",1]]},
+  {n:"Mandarin chicken salad",type:"Lunch",cuisine:"Asian",note:"Chicken breast, mandarin oranges, salad kit, soy sauce",baseServ:4,method:"skillet",time:"25 min",tip:"Warm the chicken slightly and pour it over cold salad for a better texture.",pantry:"oil, salt, pepper, olive oil, vinegar, honey",batch:"2026-10-14",
+    steps:["Cut the chicken into thin strips. Season with {x:1/2 tsp} salt, {x:1/4 tsp} pepper and {x:1 tsp} soy sauce.",
+      "Cook in an oiled skillet over medium-high heat 5-6 minutes until cooked through.",
+      "Peel and segment the oranges. Toss the salad kit with {x:2 tbsp} olive oil, {x:1 tbsp} vinegar and {x:1 tsp} honey.",
+      "Top the salad with chicken and oranges and serve."],
+    ing:[["chicken_breast",1],["oranges",0.5],["saladkit",1],["soy_sauce",0.25]]},
+  {n:"Sheet-pan chicken fajitas",type:"Dinner",cuisine:"Mexican",note:"Chicken thighs, peppers, onions, tortillas",baseServ:4,method:"oven",time:"35 min",tip:"Slice the chicken thighs into strips before roasting so they cook evenly.",pantry:"oil, salt",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Slice the peppers and onion into strips.",
+      "Toss the chicken thighs, peppers and onion with {x:2 tbsp} oil, {x:1 tsp} chili powder, {x:1/2 tsp} cumin and {x:1/2 tsp} salt.",
+      "Spread on a foil-lined sheet pan in a single layer and roast 22-25 minutes, until the chicken reaches 165°F (74°C).",
+      "Warm the tortillas and fill with the chicken, vegetables, cheese and salsa."],
+    ing:[["chicken_thighs",1.5],["peppers",2],["onions",0.5],["tortillas",1],["cheese",0.5],["salsa",0.5]]},
+  {n:"Honey soy chicken stir-fry",type:"Dinner",cuisine:"Asian",note:"Chicken breast, frozen stir-fry vegetables, noodles",baseServ:4,method:"skillet",time:"25 min",tip:"Cook the noodles while the chicken browns so everything finishes together.",pantry:"oil, salt, pepper, honey, garlic powder",batch:"2026-10-14",
+    steps:["Cut the chicken into bite-size pieces and season with {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Cook the chicken in {x:2 tbsp} oil over medium-high heat 5-6 minutes until golden. Remove and set aside.",
+      "Stir-fry the vegetables 4 minutes. Whisk {x:3 tbsp} soy sauce, {x:1 tbsp} honey and {x:1 tsp} garlic powder, pour in, and simmer 1 minute.",
+      "Return the chicken, toss with the cooked noodles and serve."],
+    ing:[["chicken_breast",1.25],["frozen_stirfry_veg",1],["noodles",1],["soy_sauce",0.25]]},
+  {n:"Turkey taco skillet bowls",type:"Dinner",cuisine:"Mexican",note:"Ground turkey, rice, black beans, cheese",baseServ:4,quick:true,method:"skillet",time:"25 min",tip:"Stir a squeeze of lime juice into the rice for a brighter taste.",pantry:"chili powder, cumin, salt",batch:"2026-10-14",
+    steps:["Brown the ground turkey in a skillet over medium-high heat, breaking it up, 6-7 minutes.",
+      "Stir in {x:1 tbsp} chili powder, {x:1 tsp} cumin, {x:1/2 tsp} salt, the drained beans and {x:1/2 cup} water. Simmer 5 minutes.",
+      "Divide the rice among bowls and top with the turkey mixture.",
+      "Add cheese, salsa and a spoon of sour cream."],
+    ing:[["ground_turkey",1],["rice",0.5],["canned_beans",1],["cheese",0.5],["salsa",0.5],["sourcream",0.5]]},
+  {n:"Pork chops with apples and onions",type:"Dinner",cuisine:"American",note:"Pork chops, apples, onions, baby potatoes",baseServ:4,method:"skillet",time:"30 min",tip:"Halve the potatoes and boil them 12 minutes first so they finish with the chops.",pantry:"oil, salt, pepper",batch:"2026-10-14",
+    steps:["Season the pork chops with {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Brown the chops in {x:1 tbsp} oil over medium-high heat, 3-4 minutes per side. Remove and set aside.",
+      "Cook the sliced onion and apple in the same pan 4 minutes. Add {x:1/2 cup} water and return the chops.",
+      "Cover and simmer 8 minutes until the pork reaches 145°F (63°C). Serve with the halved baby potatoes."],
+    ing:[["pork_chops",1.5],["apples",1],["onions",0.5],["baby_potatoes",1]]},
+  {n:"Chicken Parmesan pasta bake",type:"Dinner",cuisine:"Italian",note:"Chicken breast, pasta, marinara, mozzarella",baseServ:4,method:"oven",time:"40 min",tip:"Add a handful of spinach or sliced peppers to the dish for extra vegetables.",pantry:"oil, salt",batch:"2026-10-14",
+    steps:["Preheat the oven to 400°F (200°C). Cook the pasta 2 minutes short of the package time and drain.",
+      "Cut the chicken into bite-size pieces, season with {x:1/2 tsp} salt, and brown in {x:1 tbsp} oil, 4-5 minutes.",
+      "Toss the pasta and chicken with the marinara in a baking dish. Top with the cheese and parmesan.",
+      "Bake 15-18 minutes until bubbling and the cheese is golden."],
+    ing:[["chicken_breast",1],["pasta",1],["marinara",1],["cheese",1],["parmesan",0.25]]},
+  {n:"Sausage, pepper & potato sheet pan",type:"Dinner",cuisine:"Italian",note:"Smoked sausage, peppers, potatoes, onions",baseServ:4,method:"oven",time:"35 min",tip:"Spread the vegetables out so they roast instead of steam.",pantry:"oil, dried oregano, salt, pepper",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Cut the sausage into 2-inch pieces.",
+      "Cut the potatoes into 1-inch chunks and the peppers and onion into wedges.",
+      "Toss everything with {x:2 tbsp} oil, {x:1 tsp} dried oregano, {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Roast 25-30 minutes, turning once, until the potatoes are tender and the edges are browned."],
+    ing:[["sausage",1.5],["peppers",2],["onions",0.5],["potatoes",1]]},
+  {n:"Beef and broccoli stir-fry",type:"Dinner",cuisine:"Chinese",note:"Flank steak, broccoli, rice, soy sauce",baseServ:4,method:"skillet",time:"30 min",tip:"Freeze the steak for 15 minutes before slicing for thinner, easier cuts.",pantry:"oil, cornstarch, honey, garlic powder",batch:"2026-10-14",
+    steps:["Slice the flank steak thin across the grain. Toss with {x:1 tbsp} soy sauce and {x:1 tsp} cornstarch.",
+      "Sear the beef in {x:1 tbsp} oil over high heat 2 minutes. Remove and set aside.",
+      "Stir-fry the broccoli with {x:2 tbsp} water, covered, 3 minutes until bright green.",
+      "Return the beef and add {x:2 tbsp} soy sauce, {x:1 tbsp} honey and {x:1 tsp} garlic powder. Serve over the rice."],
+    ing:[["flank_steak",1],["broccoli",1],["rice",1],["soy_sauce",0.25]]},
+  {n:"Shrimp and egg fried rice",type:"Dinner",cuisine:"Chinese",note:"Shrimp, rice, frozen vegetables, eggs",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Let the rice cool and dry out for an hour in the fridge first. Fresh rice gets gummy.",pantry:"oil, soy sauce",batch:"2026-10-14",
+    steps:["Cook the rice ahead and let it cool, or use day-old rice.",
+      "Scramble the eggs in {x:1 tbsp} oil over medium heat. Remove and set aside.",
+      "Stir-fry the shrimp 2-3 minutes until pink. Add the vegetables and cook 3 minutes.",
+      "Add the rice, eggs and {x:2 tbsp} soy sauce. Toss over high heat 3 minutes."],
+    ing:[["shrimp",1],["rice",1],["frozen_veg",1],["eggs",0.5],["soy_sauce",0.25]]},
+  {n:"Salmon with roasted sweet potatoes and broccoli",type:"Dinner",cuisine:"American",note:"Salmon fillet, sweet potatoes, broccoli",baseServ:4,method:"oven",time:"30 min",tip:"Pull the salmon when it flakes at the thickest part. It keeps cooking as it rests.",pantry:"oil, salt, pepper, paprika",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Cut the sweet potatoes into half-inch cubes.",
+      "Toss the potatoes with {x:2 tbsp} oil, {x:1/2 tsp} salt and {x:1/2 tsp} paprika. Roast 15 minutes.",
+      "Add the broccoli and set the salmon on the pan. Season the salmon with {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Roast 10-12 minutes more until the salmon flakes easily."],
+    ing:[["salmon",1],["sweet_potato",1.5],["broccoli",1]]},
+  {n:"Slow cooker pulled pork sliders",type:"Dinner",cuisine:"BBQ",note:"Pork shoulder, BBQ sauce, buns, slaw",baseServ:4,method:"slowcooker",time:"20 min + 8 hr",tip:"Use the cooking liquid to moisten the shredded pork if it dries out.",pantry:"paprika, salt, pepper, vinegar",batch:"2026-10-14",
+    steps:["Rub the pork shoulder with {x:1 tbsp} paprika, {x:1 tsp} salt and {x:1/2 tsp} pepper.",
+      "Place in the slow cooker with {x:1/2 cup} water and cook on low for 8 hours until it shreds easily.",
+      "Shred the pork, discard the fat and stir in {x:1 cup} BBQ sauce.",
+      "Pile onto toasted buns with a quick slaw of shredded carrots and a spoon of vinegar."],
+    ing:[["pork_shoulder",2],["bbq_sauce",1],["buns",1],["carrots",0.5]]},
+  {n:"Slow cooker chicken tortilla soup",type:"Dinner",cuisine:"Mexican",note:"Chicken breast, black beans, tomatoes, tortillas",baseServ:4,method:"slowcooker",time:"15 min + 6 hr",tip:"Add the chicken to the pot whole so it shreds easily at the end.",pantry:"chili powder, cumin, salt, oil",batch:"2026-10-14",
+    steps:["Place the chicken breasts, drained beans, canned tomatoes and salsa in a slow cooker.",
+      "Add {x:4 cup} water, {x:1 tsp} chili powder, {x:1 tsp} cumin and {x:1/2 tsp} salt.",
+      "Cook on low 6 hours. Shred the chicken and stir it back in.",
+      "Cut the tortillas into strips and crisp them in a 400°F oven for 6 minutes. Top each bowl with the strips and cheese."],
+    ing:[["chicken_breast",1.25],["canned_beans",1],["canned_tomatoes",1],["salsa",1],["tortillas",1],["cheese",0.5]]},
+  {n:"Turkey meatball spaghetti",type:"Dinner",cuisine:"Italian",note:"Ground turkey, pasta, marinara",baseServ:4,method:"oven",time:"40 min",tip:"Add a few tablespoons of breadcrumbs to the turkey so the meatballs stay tender.",pantry:"salt, dried oregano, breadcrumbs",batch:"2026-10-14",
+    steps:["Preheat the oven to 400°F (200°C). Mix the turkey with {x:1/2 cup} parmesan, {x:1/2 tsp} salt, {x:1/2 tsp} dried oregano and one egg.",
+      "Roll the mixture into 1.5-inch balls and place on a foil-lined sheet pan. Bake 18-20 minutes until cooked through.",
+      "Cook the pasta while the meatballs bake.",
+      "Warm the marinara and toss with the pasta. Top with the meatballs and extra parmesan."],
+    ing:[["ground_turkey",1],["pasta",1],["marinara",1.5],["parmesan",0.25],["eggs",0.08]]},
+  {n:"Classic beef tacos",type:"Dinner",cuisine:"Mexican",note:"Ground beef, taco shells, lettuce, cheese",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Crush the taco shells slightly so they stay upright on the plate.",pantry:"chili powder, cumin, salt",batch:"2026-10-14",
+    steps:["Brown the ground beef in a skillet over medium-high heat 6-7 minutes. Drain the fat.",
+      "Stir in {x:2 tbsp} chili powder, {x:1 tsp} cumin, {x:1/2 tsp} salt and {x:1/2 cup} water. Simmer 5 minutes.",
+      "Warm the taco shells in a 350°F oven for 5 minutes.",
+      "Shred the lettuce and dice the tomato. Fill the shells with beef, lettuce, tomato, cheese and salsa."],
+    ing:[["ground_beef",1],["tacoshells",1],["lettuce",0.5],["tomato",0.5],["cheese",0.5],["salsa",0.5]]},
+  {n:"Cheeseburger skillet pasta",type:"Dinner",cuisine:"American",note:"Ground beef, pasta, cheese, milk",baseServ:4,quick:true,method:"skillet",time:"25 min",tip:"Add a spoon of mustard to the beef for the classic cheeseburger flavor.",pantry:"salt, pepper, ketchup, mustard",batch:"2026-10-14",
+    steps:["Brown the ground beef in a deep skillet, 6-7 minutes. Drain and season with {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Add {x:3 cup} water and the pasta. Cover and simmer 10 minutes, stirring, until the pasta is tender.",
+      "Stir in the milk and {x:1 cup} shredded cheese until melted and creamy.",
+      "Serve with ketchup, mustard and diced pickles on the side."],
+    ing:[["ground_beef",1],["pasta",1],["milk",0.5],["cheese",1]]},
+  {n:"Hearty beef and bean chili",type:"Dinner",cuisine:"American",note:"Ground beef, beans, tomatoes, onions",baseServ:4,method:"skillet",time:"45 min",tip:"Chili tastes better the next day. Make extra for lunches.",pantry:"chili powder, cumin, salt, paprika",batch:"2026-10-14",
+    steps:["Brown the ground beef with the chopped onion and pepper in a large pot, 8-10 minutes.",
+      "Stir in {x:2 tbsp} chili powder, {x:1 tsp} cumin, {x:1 tsp} salt and {x:1/2 tsp} paprika. Cook 1 minute.",
+      "Add the drained beans, canned tomatoes and {x:1 cup} water. Simmer uncovered 30 minutes.",
+      "Serve topped with cheese and sour cream."],
+    ing:[["ground_beef",1],["canned_beans",2],["canned_tomatoes",1],["onions",0.5],["peppers",0.5],["cheese",0.5],["sourcream",0.5]]},
+  {n:"Chicken adobo",type:"Dinner",cuisine:"Filipino",note:"Chicken thighs, soy sauce, vinegar, rice",baseServ:4,method:"skillet",time:"40 min",tip:"Use the sauce to glaze the chicken for the last 5 minutes for a richer finish.",pantry:"oil, salt, pepper, garlic powder, vinegar, bay leaf",batch:"2026-10-14",
+    steps:["Season the chicken thighs with {x:1/2 tsp} salt and brown in {x:1 tbsp} oil, skin side down, 5 minutes per side.",
+      "Add {x:1/2 cup} soy sauce, {x:1/2 cup} vinegar, {x:1 tsp} garlic powder, {x:1/2 tsp} pepper and a bay leaf if you have one.",
+      "Cover and simmer 25 minutes until the chicken is tender and the sauce is reduced by about a third.",
+      "Serve over rice and spoon the sauce on top."],
+    ing:[["chicken_thighs",1.5],["soy_sauce",0.25],["rice",1]]},
+  {n:"Greek chicken pita wraps",type:"Dinner",cuisine:"Greek",note:"Chicken breast, pita, cucumber, tomato, feta",baseServ:4,method:"skillet",time:"30 min",tip:"Marinate the chicken in the fridge up to 4 hours for more flavor.",pantry:"olive oil, dried oregano, salt, pepper, vinegar",batch:"2026-10-14",
+    steps:["Cut the chicken into strips and marinate 10 minutes in {x:2 tbsp} olive oil, {x:1 tsp} dried oregano, {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Cook in a skillet over medium-high heat 5-6 minutes until cooked through.",
+      "Dice the cucumber and tomato. Mix {x:1/2 cup} yogurt with {x:1 tsp} lemon juice or vinegar for a quick sauce.",
+      "Warm the pita and fill with chicken, vegetables, feta and sauce."],
+    ing:[["chicken_breast",1.25],["pita_bread",1],["cucumber",1],["tomato",1],["feta_cheese",0.5],["yogurt",1]]},
+  {n:"Chicken shawarma bowls",type:"Dinner",cuisine:"Mediterranean",note:"Chicken thighs, rice, cucumber, yogurt",baseServ:4,method:"oven",time:"40 min",tip:"Slice the chicken across the grain after resting 5 minutes for juicier pieces.",pantry:"cumin, paprika, garlic powder, salt, olive oil, vinegar",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Mix {x:1 tsp} cumin, {x:1 tsp} paprika, {x:1/2 tsp} garlic powder, {x:1/2 tsp} salt and {x:1 tbsp} olive oil.",
+      "Coat the chicken thighs and roast on a foil-lined pan 25-30 minutes until 165°F (74°C).",
+      "Dice the cucumber and tomato. Stir {x:1 cup} yogurt with {x:1 tsp} vinegar and a pinch of salt.",
+      "Serve the sliced chicken over rice with the vegetables and yogurt sauce."],
+    ing:[["chicken_thighs",1.5],["rice",1],["cucumber",1],["tomato",0.5],["yogurt",1]]},
+  {n:"Pork chops with mushroom gravy",type:"Dinner",cuisine:"American",note:"Pork chops, mushrooms, potatoes, cream",baseServ:4,method:"skillet",time:"35 min",tip:"Mash the potatoes with a splash of the hot cooking water if they seem dry.",pantry:"oil, butter, flour, salt, pepper",batch:"2026-10-14",
+    steps:["Peel and cube the potatoes. Boil 15 minutes until tender, then drain and mash with {x:2 tbsp} butter and {x:1/4 cup} milk.",
+      "Season the pork chops with {x:1/2 tsp} salt and {x:1/4 tsp} pepper and brown in {x:1 tbsp} oil, 3-4 minutes per side. Set aside.",
+      "Sauté the sliced mushrooms in the same pan 4 minutes. Stir in {x:2 tbsp} flour, then {x:1 cup} water and the cream. Simmer 3 minutes.",
+      "Return the chops to the gravy and simmer 5 minutes. Serve over the mashed potatoes."],
+    ing:[["pork_chops",1.5],["mushrooms",1],["potatoes",1],["heavy_cream",0.5],["milk",0.25]]},
+  {n:"Herb-roasted pork tenderloin with apples and carrots",type:"Dinner",cuisine:"American",note:"Pork tenderloin, apples, whole carrots, onion",baseServ:4,method:"oven",time:"45 min",tip:"The apples and carrots soak up the pork drippings. Serve the pan juices over everything.",pantry:"oil, salt, pepper, dried oregano, garlic powder",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Cut the carrots and apples into chunks and the onion into wedges.",
+      "Toss the vegetables with {x:2 tbsp} oil, {x:1/2 tsp} salt and {x:1/2 tsp} pepper and spread on the pan.",
+      "Season the tenderloin with {x:1 tsp} dried oregano, {x:1/2 tsp} garlic powder and {x:1/2 tsp} salt. Place on top of the vegetables.",
+      "Roast 25-30 minutes until the pork reaches 145°F (63°C). Rest 5 minutes and slice."],
+    ing:[["pork_tenderloin",1],["apples",1],["whole_carrots",1],["onions",0.5]]},
+  {n:"Sheet-pan chicken thighs with potatoes and broccoli",type:"Dinner",cuisine:"American",note:"Chicken thighs, baby potatoes, broccoli, carrots",baseServ:4,method:"oven",time:"45 min",tip:"Leave the skin on the chicken for crisper results.",pantry:"oil, salt, pepper, paprika, garlic powder",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Halve the potatoes and cut the carrots into coins.",
+      "Toss the potatoes and carrots with {x:2 tbsp} oil, {x:1/2 tsp} salt and {x:1/2 tsp} paprika. Roast 15 minutes.",
+      "Season the chicken thighs with {x:1/2 tsp} garlic powder, {x:1/2 tsp} salt and {x:1/4 tsp} pepper. Add to the pan with the broccoli.",
+      "Roast 25 minutes more until the chicken reaches 165°F (74°C)."],
+    ing:[["chicken_thighs",1.5],["baby_potatoes",1],["broccoli",1],["carrots",0.5]]},
+  {n:"Honey mustard chicken tenders with broccoli",type:"Dinner",cuisine:"American",note:"Chicken tenderloins, broccoli, rice",baseServ:4,method:"skillet",time:"25 min",tip:"Brown the tenders in batches. Crowding the pan steams them.",pantry:"oil, salt, pepper, honey, vinegar",batch:"2026-10-14",
+    steps:["Pat the chicken tenderloins dry and season with {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Cook in {x:2 tbsp} oil over medium-high heat 4-5 minutes per side until golden and cooked through.",
+      "Whisk {x:2 tbsp} honey, {x:1 tbsp} mayo and {x:1 tsp} vinegar for the dip.",
+      "Steam the broccoli 4 minutes and serve with the chicken, rice and dip."],
+    ing:[["chicken_tenderloin",1],["broccoli",1],["rice",1],["mayo",0.25]]},
+  {n:"Teriyaki chicken noodle bowls",type:"Dinner",cuisine:"Japanese",note:"Chicken thighs, noodles, broccoli, teriyaki",baseServ:4,method:"skillet",time:"30 min",tip:"Add a splash of water to the teriyaki if it thickens too much.",pantry:"oil, salt",batch:"2026-10-14",
+    steps:["Cut the chicken thighs into bite-size pieces and season with {x:1/2 tsp} salt.",
+      "Brown the chicken in {x:1 tbsp} oil over medium-high heat 6-7 minutes.",
+      "Add the broccoli and {x:1/2 cup} teriyaki sauce. Stir and cook 3 minutes until glazed.",
+      "Toss with the cooked noodles and serve."],
+    ing:[["chicken_thighs",1.5],["noodles",1],["broccoli",1],["teriyaki_sauce",0.5]]},
+  {n:"Buffalo chicken wraps",type:"Dinner",cuisine:"American",note:"Chicken breast, tortillas, lettuce, cheese",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Stir the hot sauce with melted butter first so it coats the chicken evenly.",pantry:"oil, salt, garlic powder, butter, ranch",batch:"2026-10-14",
+    steps:["Slice the chicken into thin strips and season with {x:1/2 tsp} salt and {x:1/4 tsp} garlic powder.",
+      "Cook in {x:1 tbsp} oil over medium-high heat 5-6 minutes until cooked through.",
+      "Toss the chicken with {x:3 tbsp} hot sauce and {x:1 tbsp} butter, melted.",
+      "Warm the tortillas and layer lettuce, chicken and cheese. Roll up and serve with ranch."],
+    ing:[["chicken_breast",1.25],["tortillas",1],["lettuce",0.5],["cheese",0.5],["hot_sauce",0.25]]},
+  {n:"Chicken and rice casserole",type:"Dinner",cuisine:"American",note:"Chicken thighs, rice, cream of soup, frozen vegetables",baseServ:4,method:"oven",time:"50 min",tip:"Use a little extra milk if the rice seems dry before baking.",pantry:"oil, salt, pepper, milk",batch:"2026-10-14",
+    steps:["Preheat the oven to 375°F (190°C). Cook the rice until just tender and drain.",
+      "Brown the chicken thighs in {x:1 tbsp} oil, 3-4 minutes per side. Season with {x:1/2 tsp} salt and {x:1/4 tsp} pepper.",
+      "Mix the rice, soup, frozen vegetables and {x:1/2 cup} milk in a baking dish. Nestle the chicken on top.",
+      "Cover and bake 30 minutes. Uncover, sprinkle with cheese and bake 5 minutes more."],
+    ing:[["chicken_thighs",1.5],["rice",1],["condensed_soup",1],["frozen_veg",1],["cheese",0.5]]},
+  {n:"Cajun shrimp and sausage skillet",type:"Dinner",cuisine:"Southern",note:"Shrimp, smoked sausage, baby potatoes, peppers",baseServ:4,method:"skillet",time:"30 min",tip:"Season the shrimp last. They overcook quickly and turn rubbery.",pantry:"oil, paprika, garlic powder, salt",batch:"2026-10-14",
+    steps:["Halve the potatoes and cook in boiling water 10 minutes until just tender. Drain.",
+      "Brown the sliced sausage in {x:1 tbsp} oil over medium-high heat, 4 minutes.",
+      "Add the potatoes, peppers and onion. Season with {x:1 tsp} paprika, {x:1/2 tsp} garlic powder and {x:1/2 tsp} salt. Cook 5 minutes.",
+      "Add the shrimp and cook 3 minutes until pink. Serve hot."],
+    ing:[["shrimp",1],["sausage",1],["baby_potatoes",1],["peppers",1],["onions",0.5]]},
+  {n:"Salmon teriyaki rice bowls",type:"Dinner",cuisine:"Japanese",note:"Salmon fillet, rice, broccoli, teriyaki",baseServ:4,method:"oven",time:"30 min",tip:"Brush the salmon with teriyaki once more halfway through roasting for a glossier glaze.",batch:"2026-10-14",
+    steps:["Preheat the oven to 400°F (200°C). Place the salmon on a foil-lined pan and brush with {x:3 tbsp} teriyaki sauce.",
+      "Roast 12-14 minutes until it flakes easily.",
+      "Steam the broccoli for 4 minutes and warm the rice.",
+      "Serve the salmon over rice with broccoli and a spoon of the extra teriyaki sauce."],
+    ing:[["salmon",1],["rice",1],["broccoli",1],["teriyaki_sauce",0.25]]},
+  {n:"Shrimp tacos with avocado slaw",type:"Dinner",cuisine:"Mexican",note:"Shrimp, tortillas, avocado, cabbage slaw",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Make the avocado mash right before serving so it stays bright green.",pantry:"chili powder, cumin, salt, oil, vinegar",batch:"2026-10-14",
+    steps:["Season the shrimp with {x:1 tsp} chili powder, {x:1/2 tsp} cumin and {x:1/2 tsp} salt.",
+      "Cook in {x:1 tbsp} oil over medium-high heat 2-3 minutes per side until pink.",
+      "Shred the lettuce and carrots. Mash the avocado with {x:1 tbsp} lime juice or vinegar and a pinch of salt.",
+      "Warm the tortillas and fill with shrimp, slaw and avocado. Top with salsa."],
+    ing:[["shrimp",1],["tortillas",1],["avocado",1],["lettuce",0.5],["carrots",0.5],["salsa",0.5]]},
+  {n:"Tuscan white bean chicken",type:"Dinner",cuisine:"Italian",note:"Chicken breast, cannellini beans, tomatoes, parmesan",baseServ:4,method:"skillet",time:"30 min",tip:"Mash a few beans against the pan to thicken the sauce naturally.",pantry:"oil, salt, dried oregano",batch:"2026-10-14",
+    steps:["Season the chicken with {x:1/2 tsp} salt and {x:1/2 tsp} dried oregano. Brown in {x:1 tbsp} oil, 5 minutes per side. Remove.",
+      "Sauté the onion and pepper in the same pan 4 minutes. Add the drained beans, canned tomatoes and {x:1/2 cup} water.",
+      "Return the chicken and simmer 10 minutes until cooked through.",
+      "Stir in the parmesan and serve with bread."],
+    ing:[["chicken_breast",1.25],["canned_beans",1],["canned_tomatoes",1],["onions",0.25],["peppers",0.5],["parmesan",0.25]]},
+  {n:"Creamy tomato pasta with spinach",type:"Dinner",cuisine:"Italian",note:"Pasta, marinara, cream, cherry tomatoes",baseServ:4,quick:true,method:"skillet",time:"25 min",tip:"The pasta water helps the sauce cling. Save it before draining.",pantry:"oil, dried oregano",batch:"2026-10-14",
+    steps:["Cook the pasta until al dente and reserve {x:1/2 cup} of the cooking water.",
+      "Halve the cherry tomatoes and sauté them in {x:1 tbsp} oil for 4 minutes until they soften.",
+      "Add the marinara and cream. Simmer 4 minutes, then stir in the drained pasta and a splash of the pasta water.",
+      "Finish with parmesan and fresh basil or dried oregano."],
+    ing:[["pasta",1],["marinara",1],["heavy_cream",0.5],["cherry_tomatoes",1],["parmesan",0.25]]},
+  {n:"Vegetable fried rice",type:"Dinner",cuisine:"Chinese",note:"Rice, frozen vegetables, eggs, soy sauce",baseServ:4,quick:true,method:"skillet",time:"20 min",tip:"Add a drop of sesame oil at the end for a restaurant-style flavor.",pantry:"oil, soy sauce",batch:"2026-10-14",
+    steps:["Use day-old rice, or cook rice ahead and let it cool.",
+      "Scramble the eggs in {x:1 tbsp} oil over medium heat. Remove.",
+      "Stir-fry the vegetables 4 minutes in {x:1 tbsp} oil. Add the rice and {x:2 tbsp} soy sauce and toss over high heat 3 minutes.",
+      "Return the eggs and stir to combine. Serve hot."],
+    ing:[["rice",1],["frozen_stirfry_veg",1],["eggs",0.5],["soy_sauce",0.25]]},
+  {n:"Chickpea and potato curry",type:"Dinner",cuisine:"Indian",note:"Chickpeas, potatoes, canned tomatoes, rice",baseServ:4,method:"skillet",time:"35 min",tip:"Mash a few potato cubes into the sauce to thicken it.",pantry:"oil, salt, curry powder, cumin",batch:"2026-10-14",
+    steps:["Dice the potatoes into half-inch cubes and the onion finely.",
+      "Sauté the onion in {x:1 tbsp} oil 5 minutes. Stir in {x:2 tsp} curry powder, {x:1 tsp} cumin and {x:1/2 tsp} salt. Cook 1 minute.",
+      "Add the potatoes, drained chickpeas, canned tomatoes and {x:1 cup} water. Simmer 20 minutes until the potatoes are tender.",
+      "Serve over rice with a spoon of yogurt."],
+    ing:[["chickpeas",2],["potatoes",1],["canned_tomatoes",1],["onions",0.5],["rice",1],["yogurt",1]]},
+  {n:"Chicken tikka masala",type:"Dinner",cuisine:"Indian",note:"Chicken breast, canned tomatoes, cream, rice",baseServ:4,method:"skillet",time:"40 min",tip:"Marinate longer, up to overnight, for deeper flavor.",pantry:"oil, salt, curry powder, paprika",batch:"2026-10-14",
+    steps:["Cut the chicken into bite-size pieces. Mix {x:1 cup} yogurt, {x:2 tsp} curry powder, {x:1 tsp} paprika and {x:1/2 tsp} salt. Coat the chicken and marinate 20 minutes.",
+      "Brown the chicken in {x:1 tbsp} oil over medium-high heat 5 minutes. Remove.",
+      "Sauté the onion 4 minutes. Add the canned tomatoes and simmer 5 minutes. Stir in the cream.",
+      "Return the chicken and simmer 8 minutes. Serve over rice."],
+    ing:[["chicken_breast",1.25],["yogurt",1],["canned_tomatoes",1],["onions",0.5],["heavy_cream",0.5],["rice",1]]},
+  {n:"Mediterranean chicken and chickpea bowls",type:"Dinner",cuisine:"Mediterranean",note:"Chicken breast, chickpeas, cucumber, feta, rice",baseServ:4,method:"oven",time:"35 min",tip:"Roast the chickpeas until crisp so they add crunch to the bowl.",pantry:"olive oil, dried oregano, salt",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Season the chicken with {x:2 tbsp} olive oil, {x:1 tsp} dried oregano and {x:1/2 tsp} salt.",
+      "Roast the chicken and drained chickpeas on a foil-lined pan 18-20 minutes until the chicken is cooked through.",
+      "Dice the cucumber and halve the cherry tomatoes.",
+      "Serve the chicken and chickpeas over rice with the vegetables and crumbled feta."],
+    ing:[["chicken_breast",1.25],["chickpeas",1],["cucumber",1],["cherry_tomatoes",1],["feta_cheese",0.5],["rice",1]]},
+  {n:"Frozen pizza upgrade with salad",type:"Dinner",cuisine:"American",note:"Frozen pizza, salad kit, peppers",baseServ:4,quick:true,method:"oven",time:"25 min",tip:"Add sliced peppers and a sprinkle of parmesan to the pizza for a fresher result.",pantry:"olive oil, vinegar",batch:"2026-10-14",
+    steps:["Preheat the oven to the temperature on the pizza box.",
+      "Slice the peppers thin and scatter them over the frozen pizza before baking.",
+      "Bake according to the package directions, usually 15-18 minutes.",
+      "Toss the salad kit with {x:2 tbsp} olive oil and {x:1 tbsp} vinegar. Serve alongside the pizza."],
+    ing:[["frozen_pizza",1],["saladkit",1],["peppers",0.5]]},
+  {n:"Ground turkey stuffed peppers",type:"Dinner",cuisine:"Mexican",note:"Ground turkey, peppers, rice, salsa, cheese",baseServ:4,method:"oven",time:"50 min",tip:"Parboil the pepper halves 3 minutes first so they soften faster.",pantry:"chili powder, cumin, salt",batch:"2026-10-14",
+    steps:["Preheat the oven to 375°F (190°C). Halve the peppers and remove the seeds.",
+      "Brown the ground turkey in a skillet 6-7 minutes. Stir in {x:1 tsp} chili powder, {x:1/2 tsp} cumin and {x:1/2 tsp} salt.",
+      "Mix the turkey with the cooked rice, salsa and {x:1/2 cup} cheese. Spoon into the pepper halves.",
+      "Bake covered 25 minutes, then uncover and bake 5 minutes more."],
+    ing:[["ground_turkey",1],["peppers",2],["rice",1],["salsa",0.5],["cheese",0.5]]},
+  {n:"Slow cooker carnitas",type:"Dinner",cuisine:"Mexican",note:"Pork shoulder, onions, tortillas, lime",baseServ:4,method:"slowcooker",time:"20 min + 8 hr",tip:"Keep the cooking liquid. Spoon some back over the shredded pork so it stays juicy.",pantry:"cumin, salt, garlic powder, lime",batch:"2026-10-14",
+    steps:["Cut the pork shoulder into large chunks and season with {x:2 tsp} cumin, {x:1 tsp} salt and {x:1 tsp} garlic powder.",
+      "Add the sliced onion and {x:1/2 cup} water to the slow cooker. Cook on low 8 hours until tender.",
+      "Shred the pork and spread it on a sheet pan. Broil 4-5 minutes until the edges crisp.",
+      "Serve in warm tortillas with salsa and a squeeze of lime juice."],
+    ing:[["pork_shoulder",2],["onions",0.5],["tortillas",1],["salsa",0.5]]},
+  {n:"BBQ chicken thighs with sweet potato wedges",type:"Dinner",cuisine:"BBQ",note:"Chicken thighs, BBQ sauce, sweet potatoes",baseServ:4,method:"oven",time:"45 min",tip:"Brush on the BBQ sauce only in the last 5 minutes so it doesn't burn.",pantry:"oil, salt, paprika, garlic powder",batch:"2026-10-14",
+    steps:["Preheat the oven to 425°F (220°C). Cut the sweet potatoes into wedges.",
+      "Toss the wedges with {x:2 tbsp} oil, {x:1/2 tsp} salt and {x:1/2 tsp} paprika. Roast 15 minutes.",
+      "Season the chicken thighs with {x:1/2 tsp} garlic powder and {x:1/2 tsp} salt. Add to the pan and roast 15 minutes.",
+      "Brush the chicken with {x:3 tbsp} BBQ sauce and roast 5 minutes more until caramelized. Serve with the wedges."],
+    ing:[["chicken_thighs",1.5],["sweet_potato",1.5],["bbq_sauce",0.5]]},
+  {n:"Oven-baked BBQ pork ribs",type:"Dinner",cuisine:"BBQ",note:"Pork back ribs, BBQ sauce, potatoes, carrots",baseServ:4,method:"oven",time:"20 min + 2 hr",tip:"Let the ribs rest 10 minutes before slicing so they stay juicy.",pantry:"salt, paprika, pepper",batch:"2026-10-14",
+    steps:["Preheat the oven to 300°F (150°C). Rub the ribs with {x:1 tsp} salt, {x:1 tsp} paprika and {x:1/2 tsp} pepper.",
+      "Wrap the ribs in foil and bake 2 hours until tender.",
+      "Unwrap, brush generously with {x:1/2 cup} BBQ sauce and broil 4-5 minutes until sticky.",
+      "Serve with baked potatoes and carrot sticks."],
+    ing:[["pork_back_ribs",2],["bbq_sauce",1],["potatoes",1],["carrots",0.5]]},
+  {n:"Spaghetti and meatballs",type:"Dinner",cuisine:"Italian",note:"Frozen meatballs, pasta, marinara, parmesan",baseServ:4,quick:true,method:"oven",time:"30 min",tip:"Brown the meatballs in a skillet after baking for a crisper outside.",batch:"2026-10-14",
+    steps:["Preheat the oven to 400°F (200°C). Bake the frozen meatballs on a sheet pan 15-18 minutes until hot in the center.",
+      "Cook the pasta according to the package.",
+      "Warm the marinara in a saucepan and simmer 5 minutes.",
+      "Toss the pasta with the sauce, top with meatballs and sprinkle with parmesan."],
+    ing:[["meatballs",1],["pasta",1],["marinara",1.5],["parmesan",0.25]]},
 ];
 
 const snacks = [
@@ -1246,16 +1619,26 @@ const snacks = [
   {n:"Banana ice cream bowl",cat:"Sweet",note:"Sliced banana with a scoop of ice cream",batch:"2026-10-11",ing:[["bananas",1],["ice_cream",0.25]]},
 
   // ===== New this week (batch 2026-10-12): 10 snacks =====
-  {n:"Granny Smith apple wedges & cheese",cat:"Fruit",note:"Tart apples with cheese cubes",fresh:true,seasonal:true,batch:CURRENT_BATCH,ing:[["apples", 1], ["cheese", 0.5]]},
-  {n:"Grapes & cheese cubes",cat:"Fruit",note:"Sweet and savory",fresh:true,batch:CURRENT_BATCH,ing:[["grapes", 0.5], ["cheese", 0.5]]},
-  {n:"Baked cinnamon apple chips",cat:"Fruit",note:"Thin apples baked crisp",fresh:true,seasonal:true,batch:CURRENT_BATCH,ing:[["apples", 2]]},
-  {n:"Orange & cottage cheese cups",cat:"Dairy",note:"Cottage cheese with orange segments",fresh:true,batch:CURRENT_BATCH,ing:[["cottage_cheese", 1], ["oranges", 0.34]]},
-  {n:"Apple cinnamon yogurt cups",cat:"Dairy",note:"Yogurt, diced apple, cinnamon",fresh:true,seasonal:true,batch:CURRENT_BATCH,ing:[["yogurt", 2], ["apples", 0.5]]},
-  {n:"Baked sweet potato fries",cat:"Veggie",note:"Oven-baked fries",fresh:true,batch:CURRENT_BATCH,ing:[["sweet_potato", 1]]},
-  {n:"Pita & hummus",cat:"Veggie",note:"Warm pita wedges with hummus",batch:CURRENT_BATCH,ing:[["pita_bread", 0.5], ["hummus", 0.5]]},
-  {n:"Roasted Brussels sprout bites",cat:"Veggie",note:"Crispy roasted sprouts",fresh:true,seasonal:true,batch:CURRENT_BATCH,ing:[["brussels", 1]]},
-  {n:"Celery & peanut butter boats",cat:"Veggie",note:"Classic crunch",fresh:true,batch:CURRENT_BATCH,ing:[["celery", 0.5], ["peanut_butter", 0.25]]},
-  {n:"Ice cream scoop",cat:"Sweet",note:"Purple Cow ice cream, small scoop",batch:CURRENT_BATCH,ing:[["ice_cream", 0.25]]}
+  {n:"Granny Smith apple wedges & cheese",cat:"Fruit",note:"Tart apples with cheese cubes",fresh:true,seasonal:true,batch:"2026-10-12",ing:[["apples", 1], ["cheese", 0.5]]},
+  {n:"Grapes & cheese cubes",cat:"Fruit",note:"Sweet and savory",fresh:true,batch:"2026-10-12",ing:[["grapes", 0.5], ["cheese", 0.5]]},
+  {n:"Baked cinnamon apple chips",cat:"Fruit",note:"Thin apples baked crisp",fresh:true,seasonal:true,batch:"2026-10-12",ing:[["apples", 2]]},
+  {n:"Orange & cottage cheese cups",cat:"Dairy",note:"Cottage cheese with orange segments",fresh:true,batch:"2026-10-12",ing:[["cottage_cheese", 1], ["oranges", 0.34]]},
+  {n:"Apple cinnamon yogurt cups",cat:"Dairy",note:"Yogurt, diced apple, cinnamon",fresh:true,seasonal:true,batch:"2026-10-12",ing:[["yogurt", 2], ["apples", 0.5]]},
+  {n:"Baked sweet potato fries",cat:"Veggie",note:"Oven-baked fries",fresh:true,batch:"2026-10-12",ing:[["sweet_potato", 1]]},
+  {n:"Pita & hummus",cat:"Veggie",note:"Warm pita wedges with hummus",batch:"2026-10-12",ing:[["pita_bread", 0.5], ["hummus", 0.5]]},
+  {n:"Roasted Brussels sprout bites",cat:"Veggie",note:"Crispy roasted sprouts",fresh:true,seasonal:true,batch:"2026-10-12",ing:[["brussels", 1]]},
+  {n:"Celery & peanut butter boats",cat:"Veggie",note:"Classic crunch",fresh:true,batch:"2026-10-12",ing:[["celery", 0.5], ["peanut_butter", 0.25]]},
+  {n:"Ice cream scoop",cat:"Sweet",note:"Purple Cow ice cream, small scoop",batch:"2026-10-12",ing:[["ice_cream", 0.25]]},
+  {n:"Peanut butter popcorn",cat:"Snack",note:"Warm popcorn tossed with a spoon of peanut butter",batch:"2026-10-14",ing:[["popcorn",1],["peanut_butter",0.25]]},
+  {n:"Fruit cups with yogurt dip",cat:"Fruit",note:"Cut fruit with a cup of yogurt for dipping",batch:"2026-10-14",ing:[["cutfruit",1],["yogurt",1]]},
+  {n:"Hard-boiled eggs with salt and pepper",cat:"Snack",note:"Make a batch on Sunday and grab them all week",batch:"2026-10-14",ing:[["eggs",0.5]]},
+  {n:"Bagel and cream cheese bites",cat:"Snack",note:"Cut bagels into quarters and spread on cream cheese",batch:"2026-10-14",ing:[["bagels",0.5],["creamcheese",0.5]]},
+  {n:"Tuna and cucumber rounds",cat:"Snack",note:"Cucumber coins topped with tuna",fresh:true,batch:"2026-10-14",ing:[["tuna",2],["cucumber",0.5]]},
+  {n:"Ham and cheese pinwheels",cat:"Snack",note:"Roll up, slice, and pack",batch:"2026-10-14",ing:[["tortillas",1],["lunch_meat",0.5],["cheese",0.5]]},
+  {n:"Mini English muffin pizzas",cat:"Snack",note:"Toast, top with sauce and cheese, and broil 3 minutes",batch:"2026-10-14",ing:[["english_muffins",1],["marinara",0.5],["cheese",0.5]]},
+  {n:"Yogurt and granola cups",cat:"Snack",note:"Layer in a small cup and keep the granola separate",batch:"2026-10-14",ing:[["yogurt",1],["granola",0.5]]},
+  {n:"Broccoli florets with ranch dip",cat:"Veggie",note:"Crisp and filling",fresh:true,batch:"2026-10-14",ing:[["broccoli",1],["sourcream",0.25]]},
+  {n:"Frozen fruit yogurt bark",cat:"Sweet",note:"Spread yogurt on a tray, scatter fruit, and freeze",batch:"2026-10-14",ing:[["frozen_fruit",1],["yogurt",1]]}
 ];
 
 const stockup = [
@@ -1464,7 +1847,7 @@ let quickTarget = 2;
 let snackCount = 6;
 let activeStockCat = "All";
 let budget = 150;
-const adults = {v:2}, kids = {v:0};
+const adults = {v:2}, kids = {v:2};
 const selMeals = new Map();
 const selSnacks = new Set();
 let groceryItems = [];
@@ -1532,7 +1915,7 @@ function mealRow(item, i){
   top.innerHTML = `
     ${thumb(item)}
     <div style="flex:1;">
-      <div class="item-name">${item.n}</div>
+      <div class="item-name">${item.n}${item.cuisine && mealBaseCost(item)/item.baseServ >= 3.5 ? ' <span class="pricey">Higher cost</span>' : ''}</div>
       <div class="item-cuisine">${cuisineIcon[item.cuisine]||''} ${item.cuisine}${item.quick ? ' · ⚡ Quick (~15 min)' : ''}${isNewItem(item) ? ' · 🆕 new' : ''}${(()=>{ const r = latestRating(item.n); return r && r.stars ? ' · ⭐ '+r.stars : ''; })()}${wasRecentlyMade(item.n) ? ' · 🔄 made recently' : ''}</div>
       <div class="item-note">${item.note}</div>
     </div>
@@ -1890,13 +2273,16 @@ function computeTotal(){
 
 function pixMsg(t){ const el = document.getElementById('pixMsg'); if(el) el.textContent = t; }
 function loadPhotosNow(){
-  if(!localStorage.getItem(PIXA_KEY)) return;
+  if(!localStorage.getItem(PIXA_KEY)){ pixMsg('Save your Pixabay key first.'); return; }
   const list = meals.filter(m=> isNewItem(m) && !m.photo);
+  if(!list.length){ pixMsg('All dish photos for this week are ready.'); return; }
+  pixMsg(`Loading photos… 0 of ${list.length}`);
   refreshPhotos(list, (loaded, fails)=>{
-    pixMsg(fails ? `Could not load photos (${fails} errors). Check the key and try again later.` : `Photos ready${loaded ? ' (' + loaded + ' new)' : ''}.`);
+    pixMsg(fails ? `Could not load ${fails} photo(s) (too many requests or a bad key). Tap "Load photos now" to try again.` : `Photos ready${loaded ? ' (' + loaded + ' new)' : ''}.`);
     try{ render(); renderRecipeCards(); }catch(e){}
-  });
+  }, (n, total)=> pixMsg(`Loading photos… ${n} of ${total}`));
 }
+document.getElementById('pixLoadBtn').addEventListener('click', loadPhotosNow);
 document.getElementById('pixSaveBtn').addEventListener('click', ()=>{
   const v = document.getElementById('pixKeyInput').value.trim();
   if(!v){ pixMsg(localStorage.getItem(PIXA_KEY) ? 'Key is saved. Loading photos…' : 'Paste your key first.'); if(localStorage.getItem(PIXA_KEY)) loadPhotosNow(); return; }
@@ -2958,12 +3344,13 @@ async function fetchPixabay(name){
   const hit = (j.hits || [])[0];
   return hit ? hit.webformatURL : null;
 }
-async function refreshPhotos(list, onDone){
+async function refreshPhotos(list, onDone, onProgress){
   const cache = loadJSON(PHOTO_KEY, {});
   const now = Date.now(); let loaded = 0, fails = 0;
-  for(const m of list){
+  for(let i=0; i<list.length; i++){
+    const m = list[i];
     const e = cache[m.n];
-    if(e && now - e.t < 24*3600*1000) continue;   // Pixabay asks for results to be cached 24 hours
+    if(e && e.url && now - e.t < 24*3600*1000) { if(onProgress) onProgress(i+1, list.length); continue; }   // Pixabay asks for results to be cached 24 hours; empty results are retried
     try{
       const url = await fetchPixabay(m.n);
       cache[m.n] = {url: url || '', t: now}; loaded++;
@@ -2971,6 +3358,7 @@ async function refreshPhotos(list, onDone){
     }catch(err){
       fails++; if(fails >= 3) break;               // stop early on a bad key or rate limit
     }
+    if(onProgress) onProgress(i+1, list.length);
     await new Promise(r=> setTimeout(r, 700));
   }
   saveJSON(PHOTO_KEY, cache);
@@ -3158,8 +3546,31 @@ function showSharedView(){
 window.addEventListener('hashchange', showSharedView);
 
 /* ---- 6. Weekly refresh message ---- */
+
+const WED_KEY = 'mealPlannerWedChecks';
+const WED_ITEMS = [
+  "Rate last week's meals when the prompt appears (⭐ 1–5, save favorites).",
+  "Download the new Meijer ad PDF (and the Good Deal Days PDF).",
+  "Tap \"Copy my Wednesday message\" below, paste it into your chat with Claude, and attach the PDFs.",
+  "Replace index.html and sw.js in your GitHub Pages folder with the files Claude sends back.",
+  "Open the app, tap Sync, and pick this week's meals."
+];
+function wedState(){ const s = loadJSON(WED_KEY, null); return (s && s.week === CURRENT_BATCH) ? s : {week: CURRENT_BATCH, done: []}; }
+function renderWed(){
+  const list = document.getElementById('wedList'); if(!list) return;
+  const s = wedState();
+  list.innerHTML = WED_ITEMS.map((t,i)=>`<label class="wed-row${s.done.includes(i)?' done':''}"><input type="checkbox" data-wed="${i}" ${s.done.includes(i)?'checked':''}><span>${t}</span></label>`).join('');
+  document.getElementById('wedProgress').textContent = `${s.done.length} of ${WED_ITEMS.length} done`;
+}
+document.getElementById('wedList').addEventListener('change', e=>{
+  const i = +e.target.dataset.wed; if(isNaN(i)) return;
+  const s = wedState();
+  s.done = e.target.checked ? [...new Set([...s.done, i])] : s.done.filter(x=>x!==i);
+  saveJSON(WED_KEY, s); renderWed();
+});
+renderWed();
 document.getElementById('copyWeeklyMsg').addEventListener('click', async ()=>{
-  const msg = "It's Wednesday. Here are this week's Meijer ad PDFs. Please: (1) update all grocery prices from the ads, (2) add a new batch of 40 meals (10 breakfast, 10 lunch, 20 dinner) and 10 new snacks that don't repeat earlier ones, with apples/fruit and sale items in mind, (3) keep my favorites, ratings and settings working, and (4) send me the updated app files with a short list of what changed.";
+  const msg = "It's Wednesday. Here are this week's Meijer ad PDFs. Please: (1) update all grocery prices from the ads, (2) add a new batch of 60 meals (10 breakfast, 10 lunch, 40 dinner) and 10 new snacks that don't repeat earlier ones, with apples/fruit and sale items in mind, (3) keep my favorites, ratings and settings working, and (4) send me the updated index.html and sw.js with a short list of what changed.";
   try{ await navigator.clipboard.writeText(msg); flash('Copied. Paste it into your chat with Claude and attach the ad PDFs.'); }
   catch(e){ window.prompt('Copy this message:', msg); }
 });
